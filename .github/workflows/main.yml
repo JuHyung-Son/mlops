@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: marp-team/actions@v1
+    - name: Build & Deploy to GitHub Pages
+      env: 
+        MARP_ARGS: "README.md -o index.html"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PUBLISH_TO_BRANCH: main
+        BASE_URL: https://sallys.space/mlops/
+      uses: jusonn/mlops@main
