@@ -133,16 +133,111 @@ ml + ops
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
-**Training-Serving Skew**
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
+![bg right:38% 100%](assets/skew.png)
+**Training-Serving Skew**
 - 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
-- 학습용 전처리 코드, 서빙용 전처리 코드
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
+- 전처리 서버 구현
+    - 서빙서버(trt, tf serving)의 성능을 내줘야함 :angry::angry:
+    - 모델마다 다른 전치리 방법
+    - 운영 비용 증가
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습용 전처리 코드, 서빙용 전처리 코드 분리
+    - 같은 전처리 코드를 딥러닝 프레임워크 함수로 구현
+    - 결국 딥러닝 프레임워크 함수로 구현해야함.
     - 관리 비용 증가 :cry:
-    - 전처리용 서버 구현 :angry::angry:
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+![bg right:38% 100%](assets/skew2.png)
 
 **TFT**
+- 동일한 코드로 학습, 서빙에 사용
 
-- training-serving skew 문제를 해결
+**but**
+- tf 함수를 이용해 전처리 코드 짜야함.
 ---
+
 # 학습 컴포넌트
 > 학습 코드를 받아 학습, 학습 결과물을 저장
+
+- 기존 모델의 학습 루프를 그대로 사용.
+---
+# 모델 검증, 분석 컴포넌트
+> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
+
+- Metric을 이용해 모델 분석
+
+**loss vs metric**
+
+- loss: 학습시 모델이 보는 성능 지표
+- metric: 사람이 보는 성능 지표
+    - 해석이 쉽고 좀 더 설명이 쉬움
+
+---
+# 모델 검증, 분석 컴포넌트
+> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
+
+- Metric을 이용해 모델 분석
+
+#### Classification
+- accuracy, precision, recall ...
+
+#### Regression
+- MAE, MSE ...
+
+#### GAN
+- :eye::eye:
+
+---
+# 모델 검증, 분석 컴포넌트
+> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
+
+**XAI**
+- TFMA
+- WhatIfTool
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**딥러닝 모델 서빙**
+- 연산량 많음
+- GPU 사용(성능, 메모리..)
+- 배치 단위 인퍼런스
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**파이썬 웹 서버(flask, fastAPI, django)**
+
+- 가벼운 것에 쉽게 적용 가능, 개발 쉬움.
+- 성능 많이 떨어짐
+- 구현해야할 기능이 너무 많음
+    - gpu 스케쥴링
+    - 배치 인퍼런스
+    - 모델 버전 관리
+    - etc
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+- [TF Serving](https://www.tensorflow.org/tfx/guide/serving)
+- [Triton Serving Server](https://github.com/triton-inference-server/server)
+- [onnx runtime](https://microsoft.github.io/onnxruntime/)
+- [tvm](https://tvm.apache.org/)
