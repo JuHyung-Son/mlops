@@ -13,7 +13,8 @@ marp: true
 
 손주형, 네이버 웹툰 ML 엔지니어 :computer:
 
-tensorflow, onnx, mlops, cloud :thumbsup:
+**관심사**
+ml, tensorflow, onnx, mlops, cloud :thumbsup:
 
 https://github.com/jusonn
 
@@ -21,9 +22,9 @@ https://github.com/jusonn
 # mlops로 ml 자동화하기
 
 1. mlops
-    - 왜?
+    - mlops란
     - 사용 예시
-2. 컴포넌트들
+2. mlops 컴포넌트
     - 데이터
         - 주입
         - 검증
@@ -32,6 +33,7 @@ https://github.com/jusonn
         - 학습
         - 검증
     - 서빙
+3. 코드로 보기
 ___
 ![bg right:50% 80%](assets/mlpipe.png)
 # mlops로 ml 자동화하기
@@ -39,7 +41,7 @@ ___
 1. mlops
     - mlops란
     - 사용 예시
-2. 컴포넌트들
+2. mlops 컴포넌트
     - 데이터
         - 주입
         - 검증
@@ -48,16 +50,17 @@ ___
         - 학습
         - 검증
     - 서빙
+3. 코드로 보기
 ___
 
 # mlops란
 
 > MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
 
-ml + ops
-- mlops, ml 파이프라인 ...
-- 최근 들어 자주 보임
-- 연구, 검증 위주 ➡️ 서비스 적용, 고도화
+**ml + ops**
+- mlops, ml 파이프라인으로 불리는 중
+- 다양한 오픈소스 개발중 (tfx, kubeflow...)
+- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
 ---
 # mlops란
 - 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
@@ -241,3 +244,34 @@ ml + ops
 - [Triton Serving Server](https://github.com/triton-inference-server/server)
 - [onnx runtime](https://microsoft.github.io/onnxruntime/)
 - [tvm](https://tvm.apache.org/)
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**서빙 서버를 쓰는 이유**
+- 다양한 프레임워크 지원
+- 동시 서빙
+- 배치 단위의 서빙
+- 모델 관리
+- 멀티 gpu
+- http/grpc 프로토콜 제공
+- metric 수집
+- etc
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+서빙 구조
+
+---
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+tf serving 설명
+
+---
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+최적화
