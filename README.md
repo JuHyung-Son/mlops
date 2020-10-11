@@ -54,13 +54,18 @@ ___
 ___
 
 # mlops란
-
 > MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
 
 **ml + ops**
 - mlops, ml 파이프라인으로 불리는 중
 - 다양한 오픈소스 개발중 (tfx, kubeflow...)
 - 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+---
+# mlops란
+> MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
+
+![](assets/lifecycle.png)
+
 ---
 # mlops란
 - 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
@@ -268,6 +273,7 @@ ___
 ---
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
+
 tf serving 설명
 
 ---
@@ -275,3 +281,7 @@ tf serving 설명
 > 클라이언트에게 모델 아웃풋을 제공
 
 최적화
+
+---
+# 파이프라인
+> kubeflow
