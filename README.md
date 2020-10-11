@@ -51,6 +51,13 @@ ___
         - 검증
     - 서빙
 3. 코드로 보기
+
+---
+# mlops란
+> MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
+
+![](assets/lifecycle.png)
+
 ___
 
 # mlops란
@@ -59,22 +66,22 @@ ___
 **ml + ops**
 - mlops, ml 파이프라인으로 불리는 중
 - 다양한 오픈소스 개발중 (tfx, kubeflow...)
-- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
----
-# mlops란
-> MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
-
-![](assets/lifecycle.png)
+- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
 
 ---
 # mlops란
-- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+![](assets/mlops2.png)
+
+---
+# mlops란
+- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
 ![](assets/debt.png)
 [Hidden Technical Debt in Machine Learning Systems, 2015 NIPS](https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf)
 --- 
 # 컴포넌트들
-![bg right:70% 80%](assets/model-life-cycle.png)
-### 컴포넌트들
+![bg right:65% 80%](assets/model-life-cycle.png)
+
 - 데이터
     - 주입
     - 검증
@@ -85,6 +92,45 @@ ___
 - 서빙
 
 ---
+# 컴포넌트들
+
+![bg right:60% 90%](assets/dag.png)
+필요한 컴포넌트만 사용
+
+---
+# 자동채색 예시
+
+---
+
+# TFX
+
+- 텐서플로우 생태계 구성 중 하나
+- ML 파이프라인을 구성하는 컴포넌트 제공
+- DB(MetadataStroe) 제공
+- jupyter notebook 으로 interactive 파이프라인 기능 제공
+- 정식 릴리즈 0.24
+
+---
+# TFX
+- ML 파이프라인을 구성하는 컴포넌트를 제공
+![](assets/components.png)
+
+---
+# TFX
+- 컴포넌트는 MetadataStore를 통해 통신
+- MetadataStore를 이용해 모델 혹은 컴포넌트 성능 비교
+![](assets/inside-tfx.png)
+---
+# TFX
+**비슷한 파이프라인 오픈소스**
+
+[AeroSolve](https://github.com/airbnb/aerosolve) (airbnb)
+[Railyard](https://stripe.com/blog/railyard-training-models) (Stripe)
+[Luigi](https://github.com/spotify/luigi) (spotify)
+[Michelangelo](https://eng.uber.com/michelangelo-machine-learning-platform/) (Uber)
+[Metaflow](https://metaflow.org/) Netflix
+
+---
 
 # 데이터 주입 컴포넌트
 > 파이프라인에 데이터 주입
@@ -93,21 +139,19 @@ ___
 - csv, parquet, avro, tfrecords 등 지원하나 **tfrecords 권장**
 - gcp storage bigquery, aws s3 지원
 
-**주요 기능**
-- 데이터 분리
-- 데이터 spanning
-
----
-
-# 데이터 주입 컴포넌트
-> 파이프라인에 데이터 주입
-### 텍스트 데이터
-
 ---
 # 데이터 주입 컴포넌트
-> 파이프라인에 데이터 주입
-### 이미지 데이터
 
+- 데이터 주입
+- 데이터 분리 (학습, 검증 데이터)
+
+**인풋**
+csv, parquet, avro, tfrecords, ...
+
+**아웃풋**
+ExampleGen
+    - 데이터셋 수집, 분할하는 파이프라인 초기 입력 컴포넌트
+    
 --- 
 # 데이터 검증 컴포넌트
 > 파이프라인에 데이터 주입
@@ -122,7 +166,6 @@ ___
 **garbage in, garbage out**
 ![](assets/garbage.jpg)
 
-
 ---
 # 데이터 검증 컴포넌트
 
@@ -132,6 +175,8 @@ ___
 -> 정형 데이터에 특화
 
 - missing, empty, anomaly 데이터 탐지
+- 학습, 검증 데이터 비교
+- 과거, 현재 데이터 비교
 - 효과적인, 불필요한 피쳐 찾기
 
 텍스트?
