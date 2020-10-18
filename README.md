@@ -183,7 +183,6 @@ ExampleGen
 - ML 시스템
     - 데이터 포맷, 타입이 올바른지 + alpha
 
-
 --- 
 # 데이터 검증 컴포넌트
 > 데이터가 현재 모델에 적합한 데이터인지 검증
@@ -304,10 +303,12 @@ ExampleGen
 **loss vs metric**
 
 - loss: 학습시 모델이 보는 성능 지표
+
 ---
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
-![bg right:70% 80%](assets/lossmetric.png)
+
+![bg right:50% 80%](assets/lossmetric.png)
 - Metric을 이용해 모델 분석
 
 **loss vs metric**
@@ -325,10 +326,11 @@ ExampleGen
 - loss: 학습시 모델이 보는 성능 지표
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 쉬움
+
 ---
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
-![bg right:70% 80%](assets/roccurve.png)
+![bg right:50% 80%](assets/roccurve.png)
 - Metric을 이용해 모델 분석
 
 **loss vs metric**
@@ -336,6 +338,7 @@ ExampleGen
 - loss: 학습시 모델이 보는 성능 지표
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 쉬움
+
 ---
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
@@ -455,7 +458,7 @@ saved_models/
 - predict
     - savedModel의 디폴트 설정, 가장 유연한 방법
     - 아웃풋을 추가하는 것이 가능 (ex. attention 레이어 아웃풋 추가)
-    - 
+ 
 ```json
 signature_def: {
   key  : "prediction_signature"
@@ -484,6 +487,7 @@ signature_def: {
 
 - classify
     - 하나의 인풋과 2개의 아웃풋(클래스, 스코어)을 제공하는 방법
+
 ```json
 signature_def: {
   key  : "classification_signature"
@@ -519,6 +523,7 @@ signature_def: {
 
 - regress
     - 하나의 인풋과 하나의 아웃풋을 제공하는 방법
+
 ```json
 signature_def: {
   key  : "regression_signature"
@@ -600,18 +605,18 @@ model.save(fn_args.serving_model_dir,
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-`$ pip install tensorflow-serving-api`
-:bad:
-
-`$ docker pull tensorflow/serving:latest-gpu`
+**서빙서버 실행**
+`$ pip install tensorflow-serving-api`:x:
 
 
 --- 
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
+:thumbsup:
+`$ docker pull tensorflow/serving:latest-gpu`
 ```bash
-$ docker run -p 8500:8500 \ 
+$ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \ 
              -p 8501:8501 \
              --mount type=bind,source=/tmp/models,target=/models/my_model \ 
              -e MODEL_NAME=my_model \ 
@@ -623,13 +628,272 @@ $ docker run -p 8500:8500 \
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-tf serving 설명
+**tf serving**            
+
+- tfx 파이프라인으로 관리X
+- 모델 검증 단계에서 검증된 모델을 정해놓은 디렉토리에 업로드 
+![](assets/tfx-serving.png)    
 
 ---
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-최적화
+![](assets/tfserving.png)
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**TF 모델이 아니라면?**
+
+- onnx-runtime
+- triton serving server
+- mlflow
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+- tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
+- 비정형 데이터를 다루는데에는 아직 기능이 많이 없음
+- 커스텀 컴포넌트 생성이 비교적 자유로움
+    - 파이썬 함수 기반, 컨테이너 기반, 기본 컴포넌트
+- ex
+    - 데이터 주입(비정형 데이터, custom db)
+    - 데이터 분석 결과 노티
+    - 새로 배포된 모델 노티
+    - [slack api](https://github.com/tensorflow/tfx/tree/master/tfx/examples/custom_components/slack)
+    - 등등
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**이미지 로드 -> TFRecord 데이터 주입 컴포넌트**
+![](assets/cuscomp.png)
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+1. from scratch
+2. inherit
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+1. component spec
+    - 컴포넌트가 통신하는 방법을 정의
+        - 인풋, 아웃풋, 파라미터
+2. custom executor
+    - 컴포넌트 내부의 프로세스를 정의
+3. custom driver
+    - 컴포넌트의 인풋, 아웃풋을 metadatastore에 등록
+    - 데이터 주입 컴포넌트 종류가 아니라면 쓸 일이 거의 없음
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+**component spec**
+
+```python
+from tfx.types.component_spec import ChannelParameter
+from tfx.types.component_spec import ExecutionParameter
+from tfx.types import standard_artifacts
+
+class ImageIngestComponentSpec(types.ComponenetSpec):
+
+    PARAMETERS = {
+        'name': ExecutionParameter(type=Text)
+    }
+    INPUTS = {
+        # 'input'으로 input path 를 넣는다.
+        'input': ChannelParameter(type=standard_artifacts.ExternalArtifact)
+    }
+    OUTPUTS = {
+        # 'examples'에 tfrecords를 저장한다.
+        'examples': ChannelParameter(type=standard_artifacts.Examples)
+    }
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+**component excutor**
+
+```python
+from tfx.components.base import base_executor
+
+class Executor(base_executor.BaseExecutor):
+    
+    def Do(self, input_dict: Dicr[Text, List[types.Artifact]], output_dict: Dict[Text, List[types.Artifact]], exec_properties: Dict[Text, Any]) -> None:
+        self._log_startup(input_dict, output_dict, exec_properties)
+
+        input_base_url = artifact_utils.get_single_url(input_dict['input'])
+        image_files = tf.io.gfile.listdir(input_base_url)
+        splits = get_splits(image_files)
+
+        for split_name, images in splits:
+            output_dir = artifact_utils.get_split_url(
+                output_dict['examples'], split_name
+            )
+
+            tfrecord_filename = os.path.join(output_dir, 'images.tfrecord')
+            options = tf.io.TFRecordOptions(compression_type=None)
+            writer = tf.io.TFRecordWriter(tfrecord_filename, options=options)
+            for image in images:
+                convert_image_to_TFExample(image, tf_writer, input_base_url)
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+**component driver**
+
+```python
+class ImageIngestDriver(base_driver.BaseDriver):
+
+  def resolve_input_artifacts(
+      self,
+      input_channels: Dict[Text, types.Channel],
+      exec_properties: Dict[Text, Any],
+      driver_args: data_types.DriverArgs,
+      pipeline_info: data_types.PipelineInfo) -> Dict[Text, List[types.Artifact]]:
+    del driver_args 
+    del pipeline_info
+
+    input_dict = channel_utils.unwrap_channel_dict(input_channels) 
+    for input_list in input_dict.values():
+        for single_input in input_list:
+            self._metadata_handler.publish_artifacts([single_input]) 
+            absl.logging.debug("Registered input: {}".format(single_input))
+            absl.logging.debug("single_input.mlmd_artifact "
+                               "{}".format(single_input.mlmd_artifact)) 
+    return input_dict
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+**component component**
+
+```python
+from tfx.components.base import base_component
+from tfx import types
+from tfx.types import channel_utils
+
+class ImageIngestComponent(base_component.BaseComponent):
+    SPEC_CLASS = ImageIngestComponentSpec
+    EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(ImageIngestExecutor)
+    DRIVER_CLASS = ImageIngestDriver
+
+    def __init__(self, input, output_data=None, name=None):
+        if not output_data:
+            examples_artifact = standard_artifacts.Examples()
+            examples_artifact.split_names = artifact_utils.encode_split_names(['train', 'eval'])
+            
+            output_data = channel_utils.as_channel([examples_artifact])
+
+        spec = ImageIngestComponentSpec(input=input, examples=output_data, name=name)
+        super(ImageIngestComponent, self).__init__(spec=spec)
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
+
+**component component**
+
+```python
+import os
+
+from tfx.utils.dsl_utils import external_input
+from tfx.orchestration.experimental.interactive.interactive_context import \
+    InteractiveContext
+
+from image_ingestion_component.component import ImageIngestComponent
+
+context = InteractiveContext()
+
+image_file_path = "/path/to/files"
+examples = external_input(dataimage_file_path_root)
+example_gen = ImageIngestComponent(input=examples,
+                                   name=u'ImageIngestComponent')
+context.run(example_gen)
+
+statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
+context.run(statistics_gen)
+
+context.show(statistics_gen.outputs['statistics'])
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**inherit**
+
+```python
+class ImageExampleGenExecutor(BaseExampleGenExecutor):
+
+    @beam.ptransform_fn
+    def image_to_example(...):
+        ...
+
+    def GetInputSourceToExamplePTransform(self) -> beam.PTransform:
+        return image_to_example
+```
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+**inherit**
+
+```python
+from tfx.components import FileBasedExampleGen
+from tfx.utils.dsl_utils import external_input
+
+from image_ingestion_component.executor import ImageExampleGenExecutor
+
+input_config = example_gen_pb2.Input(splits=[
+    example_gen_pb2.Input.Split(name='images',
+                                pattern='sub-directory/if/needed/*.jpg'),
+])
+
+output = example_gen_pb2.Output(
+    split_config=example_gen_pb2.SplitConfig(splits=[
+        example_gen_pb2.SplitConfig.Split(
+            name='train', hash_buckets=4),
+        example_gen_pb2.SplitConfig.Split(
+            name='eval', hash_buckets=1)
+    ])
+)
+
+example_gen = FileBasedExampleGen(
+    input=external_input("/path/to/images/"),
+    input_config=input_config,
+    output_config=output,
+    custom_executor_spec=executor_spec.ExecutorClassSpec(
+        ImageExampleGenExecutor)
+)
+```
 
 ---
 # 파이프라인
