@@ -14,16 +14,17 @@ marp: true
 손주형, 네이버 웹툰 ML 엔지니어 :computer:
 
 **관심사**
-ml, tensorflow, onnx, mlops, cloud :thumbsup:
+ml, cloud, tensorflow, onnx :thumbsup:
 
-https://github.com/jusonn
+[github](https://github.com/jusonn)
+[linkedIn](https://www.linkedin.com/in/juhyung-son-897b28130/)
 
 ---
 # mlops로 ml 자동화하기
 
 1. mlops
     - mlops란
-    - 사용 예시
+    - 이전까지의 ml
 2. mlops 컴포넌트
     - 데이터
         - 주입
@@ -33,14 +34,13 @@ https://github.com/jusonn
         - 학습
         - 검증
     - 서빙
-3. 코드로 보기
 ___
 ![bg right:50% 80%](assets/mlpipe.png)
 # mlops로 ml 자동화하기
 
 1. mlops
     - mlops란
-    - 사용 예시
+    - 이전까지의 ml
 2. mlops 컴포넌트
     - 데이터
         - 주입
@@ -50,7 +50,6 @@ ___
         - 학습
         - 검증
     - 서빙
-3. 코드로 보기
 
 ---
 # mlops란
@@ -70,14 +69,64 @@ ___
 
 ---
 # mlops란
-- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
 ![](assets/mlops2.png)
 
 ---
 # mlops란
-- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
 ![](assets/debt.png)
 [Hidden Technical Debt in Machine Learning Systems, 2015 NIPS](https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf)
+
+
+---
+# 이전까지의 ml
+1. 데이터 준비
+
+```bash
+$ mv /data/root/dataset ./
+```
+
+```bash
+$ python preprocessing.py
+
+Processing: 100%|██████████████████████| 352M/352M [00:14<00:00, 30.2MB/s]
+Compressed:  42%|█████████▎            | 148M/352M [00:14<00:19, 10.9MB/s]
+```
+
+---
+# 이전까지의 ml
+2. 학습
+
+```bash
+$ nvidia-smi
+```
+
+```bash
+$ CUDA_VISIBLE_DEVICES=0,1 python train.py --data_path ./data --epoch 100 --save_path ./saved_model
+
+training...
+epoch 1: 100%|██████████████████████| 1000/1000 [00:14<00:00, 30it/s]
+epoch 2:  42%|█████████▎            | 428/1000 [00:14<00:19, 28it/s]
+```
+
+---
+# 이전까지의 ml
+3. 모델 테스트
+
+
+```bash
+$ python test.py --data_path ./test_data --model_path ./saved_model
+
+testing...
+model a: accuracy 90%
+```
+
+```bash
+
+$ mv saved_model/14 serving_model/
+```
+
 --- 
 # 컴포넌트들
 ![bg right:65% 80%](assets/model-life-cycle.png)
@@ -94,22 +143,16 @@ ___
 ---
 # 컴포넌트들
 
-![bg right:50% 80%](assets/dag.png)
+![bg right:48% 80%](assets/dag.png)
 프로젝트에 따라 필요한 컴포넌트만 사용
 
 ---
-# 사내 프로젝트 예시
-![bg right 30%](assets/case.png)
-
----
-
 # TFX
 
-- 텐서플로우 생태계 구성 중 하나
-- ML 파이프라인을 구성하는 컴포넌트 제공, 파이프라인 X
-- DB(MetadataStroe) 제공
-- tfdv, tft 등 tf 라이브러리 포함
-- jupyter notebook 으로 interactive 파이프라인 기능 제공
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 [플랫폼](https://www.tensorflow.org/tfx?hl=ko)
+- ML 파이프라인을 구성하는 컴포넌트 제공, 파이프라인은 X
+- DB(MetadataStroe), tfdv, tft 등 tf 라이브러리 포함
+- jupyter notebook을 통한 interactive 파이프라인 기능 제공
 - 정식 릴리즈 0.24
 
 ---
@@ -124,13 +167,13 @@ ___
 ![](assets/inside-tfx.png)
 ---
 # TFX
-**비슷한 mlops 오픈소스**
+**비슷한 오픈소스**
 
 [AeroSolve](https://github.com/airbnb/aerosolve) (airbnb)
 [Railyard](https://stripe.com/blog/railyard-training-models) (Stripe)
 [Luigi](https://github.com/spotify/luigi) (spotify)
 [Michelangelo](https://eng.uber.com/michelangelo-machine-learning-platform/) (Uber)
-[Metaflow](https://metaflow.org/) Netflix
+[Metaflow](https://metaflow.org/) (Netflix)
 
 ---
 # 파이프라인
@@ -146,7 +189,7 @@ ml 컴포넌트를 실행, 모니터링
 # 데이터 주입 컴포넌트
 > 데이터 준비하고 파이프라인에 주입
 - ml 프로젝트를 시작하는 첫 단계
-- 외부의 데이터를 파이프라인에 넣는 컴포넌트
+- 외부의 데이터를 파이프라인에 넣는 역할
     - csv, parquet, avro, tfrecords 등 지원하나 **tfrecords 권장**
     - gcp storage bigquery, aws s3 지원
 
@@ -154,15 +197,10 @@ ml 컴포넌트를 실행, 모니터링
 # 데이터 주입 컴포넌트
 > 데이터 준비하고 파이프라인에 주입
 
-- 데이터 준비
+- 데이터 주입
     - 데이터 읽기
     - 분리 (학습, 검증)
-    - tfrecords로 저장
-- 데이터 주입
-
----
-# 데이터 주입 컴포넌트
-> 데이터 준비하고 파이프라인에 주입
+    - 파이프라인에 tfrecords로 저장
 
 **인풋**
 csv, parquet, avro, tfrecords, ...
@@ -188,10 +226,19 @@ ExampleGen
 > 데이터가 현재 모델에 적합한 데이터인지 검증
 - ML 시스템
     - 데이터 포맷, 타입이 올바른지 + alpha
-- 새로 들어온 데이터가 모델의 성능을 향상 시킬 수 있는 데이터인지 확인
-    - 데이터 분포
+
 **garbage in, garbage out**
 ![](assets/garbage.jpg)
+
+--- 
+# 데이터 검증 컴포넌트
+> 데이터가 현재 모델에 적합한 데이터인지 검증
+- ML 시스템
+    - 데이터 포맷, 타입이 올바른지 + alpha
+**garbage in, garbage out**
+![](assets/garbage.jpg)
+- 새로 들어온 데이터가 모델의 성능을 향상 시킬 수 있는 데이터인지 확인
+    - 데이터 분포
 
 ---
 # 데이터 검증 컴포넌트
@@ -206,13 +253,13 @@ ExampleGen
 - 효과적인, 불필요한 피쳐 찾기
 
 텍스트, 이미지 데이터의 경우엔??
->> 아직 빈약
+=> 아직 빈약:cry: (딱히 방법도 없음)
 
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
-**Training-Serving Skew**
+**:star:Training-Serving Skew:star:**
 
 ---
 # 데이터 전처리 컴포넌트
@@ -222,21 +269,22 @@ ExampleGen
 **Training-Serving Skew**
 - 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
     - 코드 관리가 어려워짐
-    - 전처리 api 필요함
+    - 전처리 api 서버가 필요함
     
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
 **Training-Serving Skew**
-- 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
 
-**해결 방법**
+**해결 방법 1**
 - 전처리 서버 구현
     - 서빙서버(trt, tf serving)의 성능을 내줘야함 :angry::angry:
-        - 파이썬으로 하던 전처리..
-        - C++로 수년간 개발되어 온 서빙서버들..
+        - 파이썬으로 하던 전처리를
+        - C++로 수년간 개발되어 온 서빙서버로..
     - 비용 증가
+        - 코드가 분리되어 있음
         - 모델마다 다른 전치리 방법 
     - 운영 비용 증가
 
@@ -245,22 +293,23 @@ ExampleGen
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
 **Training-Serving Skew**
-- 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
 
-**해결 방법**
-- 백엔드 서버에다 구현
+**해결 방법 2**
+- 백엔드 서버에 구현
     - 백엔드 서버에서 전처리 진행 후 서빙 요청
         - 쉽다.
     - 비용 증가
+        - 코드가 분리되어 있음
         - 백엔드 서버 성능에 영향을 끼침.
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
 **Training-Serving Skew**
-- 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
 
-**해결 방법**
+**해결 방법 3**
 - 전처리를 프레임워크 함수로 구현
     - 전처리 함수를 딥러닝 프레임워크 함수로 구현
         - 모델 저장시 전처리 그래프도 함께 저장 가능
@@ -278,6 +327,11 @@ ExampleGen
 **[TFT](https://www.tensorflow.org/tfx/transform/get_started)**
 - 동일한 코드로 학습, 서빙에 사용
 - tf.image, tf.text, tf.audio, tfa 등등 사용가능
+- 모델 그래프 앞단에 전처리 그래프를 붙이는 방식
+
+```python
+
+```
 
 **but**
 - tf 함수를 이용해 전처리 코드 짜야함.
