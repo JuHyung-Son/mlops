@@ -322,7 +322,7 @@ ExampleGen
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
-![bg right:38% 100%](assets/skew2.png)
+![bg right:36% 100%](assets/skew2.png)
 
 **[TFT](https://www.tensorflow.org/tfx/transform/get_started)**
 - 동일한 코드로 학습, 서빙에 사용
@@ -330,7 +330,10 @@ ExampleGen
 - 모델 그래프 앞단에 전처리 그래프를 붙이는 방식
 
 ```python
+model.ftf_layer = tf_transform_output.transform_features_layer()
 
+transformed_features = model.ftf_layer(input)
+outputs = model(transformed_features)
 ```
 
 **but**
@@ -340,14 +343,41 @@ ExampleGen
 # 학습 컴포넌트
 > 학습 코드를 받아 학습 후 결과물을 저장
 
-- 특별한 변경은 없음
 - TFX의 Trainer 컴포넌트 사용
     - run_fn() 함수를 구현 해놓으면 컴포넌트가 가져다 사용
-    - run_fn()은 기존 학습하던 방식대로
+    - run_fn():
         - 데이터를 읽고
-        - 학습을 하고
-        - 결과를 저장하면 됨
+        - 원래처럼 학습을 하고
+        - 결과를 저장
+        
+        하는 함수
 
+---
+# 학습 컴포넌트
+> 학습 코드를 받아 학습 후 결과물을 저장
+
+```python
+def run_fn(fn_args):
+
+    tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
+
+    train_dataset = _input_fn(fn_args.train_files, tf_transform_output, 64)
+    eval_dataset = _input_fn(fn_args.eval_files, tf_transform_output, 64)
+
+    model = get_model()
+
+    model.fit(
+        ...
+    )
+
+    signatures = {
+        ...
+    }
+    model.save(
+        fn_args.serving_model_dir, save_format="tf", signatures=signatures
+    )
+
+```
 ---
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
@@ -391,7 +421,7 @@ ExampleGen
 
 - loss: 학습시 모델이 보는 성능 지표
 - metric: 사람이 보는 성능 지표
-    - 해석이 쉽고 좀 더 설명이 쉬움
+    - 해석이 쉽고 좀 더 설명이 가능
 
 ---
 # 모델 검증, 분석 컴포넌트
@@ -412,9 +442,11 @@ ExampleGen
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
 
-**XAI**
-- TFMA
-- WhatIfTool
+모델 분석
+- [TFMA](https://www.tensorflow.org/tfx/model_analysis/get_started)
+
+XAI
+- [WhatIfTool](https://www.tensorflow.org/tensorboard/what_if_tool)
 
 --- 
 # 서빙 컴포넌트
@@ -422,8 +454,8 @@ ExampleGen
 
 **딥러닝 모델 서빙**
 - 연산량 많음
-- GPU 사용(성능, 메모리..)
-- 배치 단위 인퍼런스
+- GPU 가속
+- 배치 단위 서빙이 가능
 
 --- 
 # 서빙 컴포넌트
@@ -431,22 +463,13 @@ ExampleGen
 
 **파이썬 웹 서버(flask, fastAPI, django)**
 
-- 가벼운 것에 쉽게 적용 가능, 개발 쉬움.
-- 성능 많이 떨어짐
-- 구현해야할 기능이 너무 많음
+- 가벼운 것에 쉽게 적용 가능, 개발 쉬움 :thumbsup:
+- 성능 많이 떨어짐 :cry:
+- 구현해야할 기능이 너무 많음 :cry:
     - gpu 스케쥴링
     - 배치 인퍼런스
     - 모델 버전 관리
     - etc
-
---- 
-# 서빙 컴포넌트
-> 클라이언트에게 모델 아웃풋을 제공
-
-- [TF Serving](https://www.tensorflow.org/tfx/guide/serving)
-- [Triton Serving Server](https://github.com/triton-inference-server/server)
-- [onnx runtime](https://microsoft.github.io/onnxruntime/)
-- [tvm](https://tvm.apache.org/)
 
 --- 
 # 서빙 컴포넌트
@@ -465,12 +488,27 @@ ExampleGen
 --- 
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
+
+- [TF Serving](https://www.tensorflow.org/tfx/guide/serving)
+- [Triton Serving Server](https://github.com/triton-inference-server/server)
+- [onnx runtime](https://microsoft.github.io/onnxruntime/)
+- [tvm](https://tvm.apache.org/)
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
 **[TF Serving](https://github.com/tensorflow/serving)**
 
 **Saved Model**
+- 모델의 변수, 상수와 signature를 갖고 있는 디렉토리 
 ```python
 saved_model_path = model.save(path, save_format='tf')
 ```
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
 
 - saved_model.pb: 모델 그래프 구조가 저장된 binary pb 파일
 - variables: 모델 그래프의 변수들이 저장된 폴더
@@ -498,8 +536,8 @@ saved_models/
 **Model Signatures**
 
 - 모델 그래프의 인풋, 아웃풋, 서빙 방법을 확인
-- model signature를 바꾸는 것만으로 필요한 결과물을 변경 가능
-- `predict`, `classify`, `regress` 방법을 제공
+- model signature를 설정으로 모델 변경 가능
+- `predict`, `classify`, `regress` 타입 제공
     - 모델이 어떤 문제냐에 따라 방법을 다르게 사용.
     - 잘 모르겠다면 predict만 사용하면 됨
 
@@ -508,11 +546,9 @@ saved_models/
 > 클라이언트에게 모델 아웃풋을 제공
 
 **Model Signatures**
-
 - predict
     - savedModel의 디폴트 설정, 가장 유연한 방법
-    - 아웃풋을 추가하는 것이 가능 (ex. attention 레이어 아웃풋 추가)
- 
+    - 아웃풋을 추가하는 것이 가능 (ex. attention 레이어 아웃풋 추가) 
 ```json
 signature_def: {
   key  : "prediction_signature"
@@ -538,6 +574,12 @@ signature_def: {
   }
 }
 ```
+
+---
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**Model Signatures**
 
 - classify
     - 하나의 인풋과 2개의 아웃풋(클래스, 스코어)을 제공하는 방법
@@ -575,6 +617,12 @@ signature_def: {
 }
 ```
 
+---
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**Model Signatures**
+
 - regress
     - 하나의 인풋과 하나의 아웃풋을 제공하는 방법
 
@@ -609,20 +657,6 @@ signature_def: {
 
 **cli 로 model inspect**
 `$ pip install tensorflow-serving-api`
-
-```bash
-$ saved_model_cli show --dir saved_models/
-The given SavedModel contains the following tag-sets:
-serve
-```
-
-```bash
-$ saved_model_cli show --dir saved_models/ --tag_set serve
-The given SavedModel 'MetaGraphDef' contains 'SignatureDefs' with the
-following keys:
-SignatureDef key: "serving_default"
-```
-
 ```bash
 $ saved_model_cli show --dir saved_models/ \
         --tag_set serve --signature_def serving_default
@@ -639,6 +673,11 @@ The given SavedModel SignatureDef contains the following output(s):
 Method name is: tensorflow/serving/predict
 ```
 
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**signature 설정**
 ```python
 signatures = {
     'serving_default':
@@ -662,11 +701,6 @@ model.save(fn_args.serving_model_dir,
 **서빙서버 실행**
 `$ pip install tensorflow-serving-api`:x:
 
-
---- 
-# 서빙 컴포넌트
-> 클라이언트에게 모델 아웃풋을 제공
-
 :thumbsup:
 `$ docker pull tensorflow/serving:latest-gpu`
 ```bash
@@ -685,7 +719,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 **tf serving**            
 
 - tfx 파이프라인으로 관리X
-- 모델 검증 단계에서 검증된 모델을 정해놓은 디렉토리에 업로드 
+- 모델 검증 단계에서 검증된 모델을 Pusher가 정해놓은 디렉토리에 업로드 
 ![](assets/tfx-serving.png)    
 
 ---
@@ -694,28 +728,17 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 
 ![](assets/tfserving.png)
 
---- 
-# 서빙 컴포넌트
-> 클라이언트에게 모델 아웃풋을 제공
-
-**TF 모델이 아니라면?**
-
-- onnx-runtime
-- triton serving server
-- mlflow
-
 ---
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
 - tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
-- 비정형 데이터를 다루는데에는 아직 기능이 많이 없음
-- 커스텀 컴포넌트 생성이 비교적 자유로움
+- 비정형 데이터를 다루는데에는 아직 부족
+- 커스텀 컴포넌트 생성 방법
     - 파이썬 함수 기반, 컨테이너 기반, 기본 컴포넌트
 - ex
     - 데이터 주입(비정형 데이터, custom db)
-    - 데이터 분석 결과 노티
-    - 새로 배포된 모델 노티
+    - 분석 결과, 배포 노티
     - [slack api](https://github.com/tensorflow/tfx/tree/master/tfx/examples/custom_components/slack)
     - 등등
 ---
@@ -751,10 +774,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
-
 **component spec**
-
 ```python
 from tfx.types.component_spec import ChannelParameter
 from tfx.types.component_spec import ExecutionParameter
@@ -779,7 +799,6 @@ class ImageIngestComponentSpec(types.ComponenetSpec):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
 
 **component excutor**
 
@@ -811,13 +830,10 @@ class Executor(base_executor.BaseExecutor):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
-
 **component driver**
 
 ```python
 class ImageIngestDriver(base_driver.BaseDriver):
-
   def resolve_input_artifacts(
       self,
       input_channels: Dict[Text, types.Channel],
@@ -841,9 +857,8 @@ class ImageIngestDriver(base_driver.BaseDriver):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
 
-**component component**
+**component**
 
 ```python
 from tfx.components.base import base_component
@@ -870,21 +885,15 @@ class ImageIngestComponent(base_component.BaseComponent):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
-
-**component component**
+**component**
 
 ```python
-import os
-
 from tfx.utils.dsl_utils import external_input
 from tfx.orchestration.experimental.interactive.interactive_context import \
     InteractiveContext
-
 from image_ingestion_component.component import ImageIngestComponent
 
 context = InteractiveContext()
-
 image_file_path = "/path/to/files"
 examples = external_input(dataimage_file_path_root)
 example_gen = ImageIngestComponent(input=examples,
@@ -923,14 +932,11 @@ class ImageExampleGenExecutor(BaseExampleGenExecutor):
 ```python
 from tfx.components import FileBasedExampleGen
 from tfx.utils.dsl_utils import external_input
-
 from image_ingestion_component.executor import ImageExampleGenExecutor
-
 input_config = example_gen_pb2.Input(splits=[
     example_gen_pb2.Input.Split(name='images',
                                 pattern='sub-directory/if/needed/*.jpg'),
 ])
-
 output = example_gen_pb2.Output(
     split_config=example_gen_pb2.SplitConfig(splits=[
         example_gen_pb2.SplitConfig.Split(
@@ -939,7 +945,6 @@ output = example_gen_pb2.Output(
             name='eval', hash_buckets=1)
     ])
 )
-
 example_gen = FileBasedExampleGen(
     input=external_input("/path/to/images/"),
     input_config=input_config,
