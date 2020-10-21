@@ -747,7 +747,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 
 **이미지 로드 -> TFRecord 데이터 주입 컴포넌트**
 ![](assets/cuscomp.png)
-
+ 
 ---
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
@@ -889,8 +889,6 @@ class ImageIngestComponent(base_component.BaseComponent):
 
 ```python
 from tfx.utils.dsl_utils import external_input
-from tfx.orchestration.experimental.interactive.interactive_context import \
-    InteractiveContext
 from image_ingestion_component.component import ImageIngestComponent
 
 context = InteractiveContext()
@@ -932,7 +930,8 @@ class ImageExampleGenExecutor(BaseExampleGenExecutor):
 ```python
 from tfx.components import FileBasedExampleGen
 from tfx.utils.dsl_utils import external_input
-from image_ingestion_component.executor import ImageExampleGenExecutor
+from image_ingestion_component.executor import ImageExampleGenExecutor                                    
+
 input_config = example_gen_pb2.Input(splits=[
     example_gen_pb2.Input.Split(name='images',
                                 pattern='sub-directory/if/needed/*.jpg'),
@@ -956,4 +955,66 @@ example_gen = FileBasedExampleGen(
 
 ---
 # 파이프라인
-> kubeflow
+> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
+
+- 쿠버네티스 기반 ML 툴킷
+    - [KFServing](https://github.com/kubeflow/kfserving)
+    - [Katib](https://github.com/kubeflow/katib)
+    - [TFJob](https://www.kubeflow.org/docs/components/training/tftraining/)
+    - [Kubeflow Pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
+- v1.1
+- 구글 내부 프로젝트로 시작
+- 내부는 [argo](https://github.com/argoproj/argo)로 실행
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
+![bg right:45% 80%](assets/kf.png)
+
+- 스크립트로 생성된 argo conf를 k8s에 전달
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
+![bg right:45% 80%](assets/kf.png)
+
+k8s, argo... 
+
+tfx 스크립트만..!
+
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
+
+![bg right:45% 80%](assets/kf.png)
+
+- [tfx_py_script.py](https://gist.github.com/jusonn/24c3628de8a5c63e179ac109c56e6e05)
+
+```bash
+INFO:absl:Pipeline root set to: /tfx-data/output
+INFO:absl:Adding upstream dependencies for component CsvExampleGen
+INFO:absl:Adding upstream dependencies for component ResolverNode_latest_blessed_model_resolver
+INFO:absl:Adding upstream dependencies for component StatisticsGen
+INFO:absl:   ->  Component: CsvExampleGen
+INFO:absl:Adding upstream dependencies for component SchemaGen
+INFO:absl:   ->  Component: StatisticsGen
+INFO:absl:Adding upstream dependencies for component ExampleValidator
+INFO:absl:   ->  Component: SchemaGen
+INFO:absl:   ->  Component: StatisticsGen
+INFO:absl:Adding upstream dependencies for component Transform
+INFO:absl:   ->  Component: CsvExampleGen
+INFO:absl:   ->  Component: SchemaGen
+INFO:absl:Adding upstream dependencies for component Trainer
+INFO:absl:   ->  Component: SchemaGen
+INFO:absl:   ->  Component: Transform
+INFO:absl:Adding upstream dependencies for component Evaluator
+INFO:absl:   ->  Component: CsvExampleGen
+INFO:absl:   ->  Component: ResolverNode_latest_blessed_model_resolver
+INFO:absl:   ->  Component: Trainer
+INFO:absl:Adding upstream dependencies for component Pusher
+INFO:absl:   ->  Component: Evaluator
+INFO:absl:   ->  Component: Trainer
+```
+
+[argo_conf.yaml](https://gist.github.com/jusonn/be0e5c4600af3af28ffa8a4eb764c297)
