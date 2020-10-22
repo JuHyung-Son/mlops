@@ -11,7 +11,8 @@ marp: true
 
 # **발표자**
 
-손주형, 네이버 웹툰 ML 엔지니어 :computer:
+손주형,
+네이버 웹툰 ML 엔지니어 :computer:
 
 **관심사**
 ml, cloud, tensorflow, onnx :thumbsup:
@@ -25,17 +26,8 @@ ml, cloud, tensorflow, onnx :thumbsup:
 1. mlops
     - mlops란
     - 이전까지의 ml
-2. mlops 컴포넌트
-    - 데이터
-        - 주입
-        - 검증
-        - 전처리
-    - 모델
-        - 학습
-        - 검증
-    - 서빙
-___
-![bg right:50% 80%](assets/mlpipe.png)
+
+---
 # mlops로 ml 자동화하기
 
 1. mlops
@@ -50,7 +42,39 @@ ___
         - 학습
         - 검증
     - 서빙
+---
+# mlops로 ml 자동화하기
 
+1. mlops
+    - mlops란
+    - 이전까지의 ml
+2. mlops 컴포넌트
+    - 데이터
+        - 주입
+        - 검증
+        - 전처리
+    - 모델
+        - 학습
+        - 검증
+    - 서빙
+3. 파이프라인
+___
+![bg right:47% 80%](assets/mlpipe.png)
+# mlops로 ml 자동화하기
+
+1. mlops
+    - mlops란
+    - 이전까지의 ml
+2. mlops 컴포넌트
+    - 데이터
+        - 주입
+        - 검증
+        - 전처리
+    - 모델
+        - 학습
+        - 검증
+    - 서빙
+3. 파이프라인
 ---
 # mlops란
 > MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
@@ -64,8 +88,14 @@ ___
 
 **ml + ops**
 - mlops, ml 파이프라인으로 불리는 중
-- 다양한 오픈소스 개발중 (tfx, kubeflow...)
-- 연구, 비즈니스 검증 위주 ➡️ 서비스 적용, 고도화
+- 다양한 오픈소스 (tfx, kubeflow, mlflow...)
+- 최근들어 중요성이 부각됨
+    - 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
+---
+# mlops란
+- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
+![](assets/debt.png)
+[Hidden Technical Debt in Machine Learning Systems, 2015 NIPS](https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf)
 
 ---
 # mlops란
@@ -73,25 +103,18 @@ ___
 ![](assets/mlops2.png)
 
 ---
-# mlops란
-- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
-![](assets/debt.png)
-[Hidden Technical Debt in Machine Learning Systems, 2015 NIPS](https://papers.nips.cc/paper/5656-hidden-technical-debt-in-machine-learning-systems.pdf)
-
-
----
 # 이전까지의 ml
 1. 데이터 준비
 
 ```bash
+$ ssh ~~~~
 $ mv /data/root/dataset ./
 ```
 
 ```bash
 $ python preprocessing.py
 
-Processing: 100%|██████████████████████| 352M/352M [00:14<00:00, 30.2MB/s]
-Compressed:  42%|█████████▎            | 148M/352M [00:14<00:19, 10.9MB/s]
+Processing: 100%|██████████████████████| 352M/352M [80:14<00:00, 30.2it/s]
 ```
 
 ---
@@ -119,18 +142,16 @@ epoch 2:  42%|█████████▎            | 428/1000 [00:14<00:19,
 $ python test.py --data_path ./test_data --model_path ./saved_model
 
 testing...
-model a: accuracy 90%
+model 14: accuracy 90%
 ```
 
 ```bash
-
 $ mv saved_model/14 serving_model/
 ```
 
 --- 
-# 컴포넌트들
+# mlops에서는?
 ![bg right:65% 80%](assets/model-life-cycle.png)
-
 - 데이터
     - 주입
     - 검증
@@ -141,17 +162,17 @@ $ mv saved_model/14 serving_model/
 - 서빙
 
 ---
-# 컴포넌트들
+# mlops에서는?
 
-![bg right:48% 80%](assets/dag.png)
+![bg right:46% 80%](assets/dag.png)
 프로젝트에 따라 필요한 컴포넌트만 사용
 
 ---
 # TFX
 
 - 텐서플로우 생태계 구성 중 프로덕션을 위한 [플랫폼](https://www.tensorflow.org/tfx?hl=ko)
-- ML 파이프라인을 구성하는 컴포넌트 제공, 파이프라인은 X
-- DB(MetadataStroe), tfdv, tft 등 tf 라이브러리 포함
+- ML 파이프라인을 구성하는 컴포넌트 제공
+- MetadataStore(DB), tfdv, tft 등 tf 라이브러리 포함
 - jupyter notebook을 통한 interactive 파이프라인 기능 제공
 - 정식 릴리즈 0.24
 
@@ -162,12 +183,12 @@ $ mv saved_model/14 serving_model/
 
 ---
 # TFX
-- 컴포넌트는 DB(MetadataStore)를 통해 통신
+- 컴포넌트는 MetadataStore(DB)를 통해 통신
 - MetadataStore를 이용해 모델 혹은 컴포넌트 성능 비교 가능
 ![](assets/inside-tfx.png)
 ---
 # TFX
-**비슷한 오픈소스**
+**비슷한 오픈소스** 
 
 [AeroSolve](https://github.com/airbnb/aerosolve) (airbnb)
 [Railyard](https://stripe.com/blog/railyard-training-models) (Stripe)
@@ -186,6 +207,10 @@ ml 컴포넌트를 실행, 모니터링
 
 ---
 
+1. 컴포넌트 구성
+2. 파이프라인 실행
+
+---
 # 데이터 주입 컴포넌트
 > 데이터 준비하고 파이프라인에 주입
 - ml 프로젝트를 시작하는 첫 단계
