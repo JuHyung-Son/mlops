@@ -222,10 +222,14 @@ ml 컴포넌트를 실행, 모니터링
 # 데이터 주입 컴포넌트
 > 데이터 준비하고 파이프라인에 주입
 
-- 데이터 주입
+- 데이터 주입 컴포넌트에서 하는 것
     - 데이터 읽기
     - 분리 (학습, 검증)
     - 파이프라인에 tfrecords로 저장
+
+---
+# 데이터 주입 컴포넌트
+> 데이터 준비하고 파이프라인에 주입
 
 **인풋**
 csv, parquet, avro, tfrecords, ...
@@ -233,6 +237,12 @@ csv, parquet, avro, tfrecords, ...
 **아웃풋**
 ExampleGen
     - 데이터셋 수집, 분할하는 파이프라인 초기 입력 컴포넌트
+
+---
+# 데이터 주입 컴포넌트
+> 데이터 준비하고 파이프라인에 주입
+
+![](assets/csvexample.png)
     
 --- 
 # 데이터 검증 컴포넌트
@@ -279,6 +289,13 @@ ExampleGen
 
 텍스트, 이미지 데이터의 경우엔??
 => 눈으로 본다... 아직 빈약:cry: (딱히 방법도 없음)
+
+---
+# 데이터 검증 컴포넌트
+> 데이터가 현재 모델에 적합한 데이터인지 검증
+
+`Examples` -> `ExampleStatistics` -> `Schema` -> `ExampleValidator`
+![](assets/validator.png)
 
 ---
 # 데이터 전처리 컴포넌트
@@ -363,9 +380,13 @@ transformed_features = model.ftf_layer(input)
 # 인퍼런스
 outputs = model(transformed_features)
 ```
-
-**but**
 - tf 함수를 이용해 전처리 코드 짜야함.
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+![](assets/transformoutput.png)
 
 ---
 # 학습 컴포넌트
@@ -403,6 +424,12 @@ def run_fn(fn_args):
     )
 
 ```
+
+---
+# 학습 컴포넌트
+> 학습 후 결과물을 저장
+
+![](assets/traineroutput.png)
 
 ---
 # 모델 검증, 분석 컴포넌트
@@ -479,6 +506,11 @@ def run_fn(fn_args):
 XAI
 - [WhatIfTool](https://www.tensorflow.org/tensorboard/what_if_tool)
 
+---
+# 모델 검증, 분석 컴포넌트
+
+![](assets/tfmaoutput.png)
+
 --- 
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
@@ -525,6 +557,15 @@ XAI
 - [Triton Serving Server](https://github.com/triton-inference-server/server)
 - [onnx runtime](https://microsoft.github.io/onnxruntime/)
 - [tvm](https://tvm.apache.org/)
+- [KFServing](https://www.kubeflow.org/docs/components/serving/kfserving/)
+
+[KFserving 명세](https://github.com/kubeflow/kfserving/tree/master/docs)
+
+---
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+![](assets/tfserving.png)
 
 --- 
 # 서빙 컴포넌트
@@ -781,8 +822,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 ---
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
-
-![](assets/tfserving.png)
+![](assets/pusheroutput.png)
 
 ---
 # 커스텀 컴포넌트
