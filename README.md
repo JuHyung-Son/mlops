@@ -263,7 +263,7 @@ ExampleGen
 **garbage in, garbage out**
 ![](assets/garbage.jpg)
 - 새로 들어온 데이터가 모델의 성능을 향상 시킬 수 있는 데이터인지 확인
-    - 데이터 분포
+    - 데이터 분포, 이미지 도메인, 자연어처리
 
 ---
 # 데이터 검증 컴포넌트
@@ -278,7 +278,7 @@ ExampleGen
 - 효과적인, 불필요한 피쳐 찾기
 
 텍스트, 이미지 데이터의 경우엔??
-=> 아직 빈약:cry: (딱히 방법도 없음)
+=> 눈으로 본다... 아직 빈약:cry: (딱히 방법도 없음)
 
 ---
 # 데이터 전처리 컴포넌트
@@ -292,9 +292,9 @@ ExampleGen
 
 ![bg right:38% 100%](assets/skew.png)
 **Training-Serving Skew**
-- 학습할 떄와 서빙할 때 데이터를 전처리하는 방법이 다름.
-    - 코드 관리가 어려워짐
-    - 전처리 api 서버가 필요함
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+    - 학습시에는 pandas 등으로 데이터를 전치리 해놓음
+    - 서빙시에는 api를 통해 실시간으로 처리
     
 ---
 # 데이터 전처리 컴포넌트
@@ -304,12 +304,11 @@ ExampleGen
 - 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
 
 **해결 방법 1**
-- 전처리 서버 구현
-    - 서빙서버(trt, tf serving)의 성능을 내줘야함 :angry::angry:
-        - 파이썬으로 하던 전처리를
-        - C++로 수년간 개발되어 온 서빙서버로..
+- 전처리 서버 추가
+    - 서빙서버(trt, tf serving)의 성능을 받쳐줄 수 있어야함 :angry::angry:
+        - C++로 수년간 개발되어 온 서빙서버..
     - 비용 증가
-        - 코드가 분리되어 있음
+        - 전처리 코드가 분리되어 있음
         - 모델마다 다른 전치리 방법 
     - 운영 비용 증가
 
@@ -324,9 +323,10 @@ ExampleGen
 - 백엔드 서버에 구현
     - 백엔드 서버에서 전처리 진행 후 서빙 요청
         - 쉽다.
+    - 백엔드 서버 성능에 영향을 끼침.
     - 비용 증가
         - 코드가 분리되어 있음
-        - 백엔드 서버 성능에 영향을 끼침.
+
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
@@ -336,7 +336,7 @@ ExampleGen
 
 **해결 방법 3**
 - 전처리를 프레임워크 함수로 구현
-    - 전처리 함수를 딥러닝 프레임워크 함수로 구현
+    - `torch.nn`, `tft` 등..
         - 모델 저장시 전처리 그래프도 함께 저장 가능
     - 관리 비용 감소
         - 서빙서버만 사용
@@ -352,12 +352,15 @@ ExampleGen
 **[TFT](https://www.tensorflow.org/tfx/transform/get_started)**
 - 동일한 코드로 학습, 서빙에 사용
 - tf.image, tf.text, tf.audio, tfa 등등 사용가능
-- 모델 그래프 앞단에 전처리 그래프를 붙이는 방식
+- 전처리 그래프 생성 후 모델 그래프 앞단에 전처리 그래프를 붙이는 방식
 
 ```python
 model.ftf_layer = tf_transform_output.transform_features_layer()
 
+# 전처리
 transformed_features = model.ftf_layer(input)
+
+# 인퍼런스
 outputs = model(transformed_features)
 ```
 
@@ -366,11 +369,11 @@ outputs = model(transformed_features)
 
 ---
 # 학습 컴포넌트
-> 학습 코드를 받아 학습 후 결과물을 저장
+> 학습 후 결과물을 저장
 
 - TFX의 Trainer 컴포넌트 사용
-    - run_fn() 함수를 구현 해놓으면 컴포넌트가 가져다 사용
-    - run_fn():
+    - `run_fn()` 함수를 구현 해놓으면 컴포넌트가 가져다 사용
+    - `run_fn()`:
         - 데이터를 읽고
         - 원래처럼 학습을 하고
         - 결과를 저장
@@ -379,15 +382,15 @@ outputs = model(transformed_features)
 
 ---
 # 학습 컴포넌트
-> 학습 코드를 받아 학습 후 결과물을 저장
+> 학습 후 결과물을 저장
 
 ```python
 def run_fn(fn_args):
 
-    tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
+    tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)                              
 
-    train_dataset = _input_fn(fn_args.train_files, tf_transform_output, 64)
-    eval_dataset = _input_fn(fn_args.eval_files, tf_transform_output, 64)
+    train_dataset = _input_fn(fn_args.train_files, tf_transform_output, batch_size)                 
+    eval_dataset = _input_fn(fn_args.eval_files, tf_transform_output, batch_size)
 
     model = get_model()
 
@@ -395,44 +398,47 @@ def run_fn(fn_args):
         ...
     )
 
-    signatures = {
-        ...
-    }
     model.save(
         fn_args.serving_model_dir, save_format="tf", signatures=signatures
     )
 
 ```
+
 ---
 # 모델 검증, 분석 컴포넌트
-> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
+> 학습된 모델을 분석하고 배포중인 모델과 성능을 비교 후 대체
 
 - Metric을 이용해 모델 분석
 
+---
+# 모델 검증, 분석 컴포넌트
+> 학습된 모델을 분석하고 배포중인 모델과 성능을 비교 후 대체
+
+
 **loss vs metric**
 
-- loss: 학습시 모델이 보는 성능 지표
+- loss: 학습시 모델이 보는 지표
+    - 모델이 학습할 방향을 제시
 
 ---
 # 모델 검증, 분석 컴포넌트
-> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
+> 학습된 모델을 분석하고 배포중인 모델과 성능을 비교 후 대체
 
 ![bg right:50% 80%](assets/lossmetric.png)
-- Metric을 이용해 모델 분석
 
 **loss vs metric**
 
-- loss: 학습시 모델이 보는 성능 지표
+- loss: 학습시 모델이 보는 지표
+    - 모델이 학습할 방향을 제시
 
 ---
 # 모델 검증, 분석 컴포넌트
-> 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
-
-- Metric을 이용해 모델 분석
+> 학습된 모델을 분석하고 배포중인 모델과 성능을 비교 후 대체
 
 **loss vs metric**
 
-- loss: 학습시 모델이 보는 성능 지표
+- loss: 학습시 모델이 보는 지표
+    - 모델이 학습할 방향을 제시
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 쉬움
 
@@ -440,11 +446,11 @@ def run_fn(fn_args):
 # 모델 검증, 분석 컴포넌트
 > 학습된 모델을 분석하고 배포중인 모델의 성능을 비교 후 대체
 ![bg right:50% 80%](assets/roccurve.png)
-- Metric을 이용해 모델 분석
 
 **loss vs metric**
 
 - loss: 학습시 모델이 보는 성능 지표
+    - 모델이 학습할 방향을 제시
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 가능
 
@@ -479,14 +485,14 @@ XAI
 
 **딥러닝 모델 서빙**
 - 연산량 많음
-- GPU 가속
-- 배치 단위 서빙이 가능
+- GPU 가속 가능
+- 배치 단위 서빙 가능
 
 --- 
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-**파이썬 웹 서버(flask, fastAPI, django)**
+**파이썬 웹 서버(flask, fastAPI, django) 기반**
 
 - 가벼운 것에 쉽게 적용 가능, 개발 쉬움 :thumbsup:
 - 성능 많이 떨어짐 :cry:
@@ -500,7 +506,8 @@ XAI
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-**서빙 서버를 쓰는 이유**
+**오픈소스 서빙 서버(triton, tf serving, kf serving)**
+- 간편함
 - 다양한 프레임워크 지원
 - 동시 서빙
 - 배치 단위의 서빙
@@ -528,7 +535,7 @@ XAI
 **Saved Model**
 - 모델의 변수, 상수와 signature를 갖고 있는 디렉토리 
 ```python
-saved_model_path = model.save(path, save_format='tf')
+saved_model_path = model.save('saved_models/1', save_format='tf', signatures=signatures)
 ```
 
 --- 
@@ -540,9 +547,9 @@ saved_model_path = model.save(path, save_format='tf')
 - assets: 모델에 필요한 추가적인 파일들 ex) vocab
 
 ```bash
-$ tree saved_models/
+$ tree saved_models/                                                                             
 saved_models/
-└── 1555875926
+└── 1
     ├── assets
     │   └── saved_model.json
     ├── saved_model.pb
@@ -561,7 +568,7 @@ saved_models/
 **Model Signatures**
 
 - 모델 그래프의 인풋, 아웃풋, 서빙 방법을 확인
-- model signature를 설정으로 모델 변경 가능
+- model signatures 설정으로 모델 아웃풋 변경 가능
 - `predict`, `classify`, `regress` 타입 제공
     - 모델이 어떤 문제냐에 따라 방법을 다르게 사용.
     - 잘 모르겠다면 predict만 사용하면 됨
@@ -576,7 +583,7 @@ saved_models/
     - 아웃풋을 추가하는 것이 가능 (ex. attention 레이어 아웃풋 추가) 
 ```json
 signature_def: {
-  key  : "prediction_signature"
+  key  : "prediction_signature"                                                                                                                                                                 
   value: {
     inputs: {
       key  : "inputs"
@@ -611,7 +618,7 @@ signature_def: {
 
 ```json
 signature_def: {
-  key  : "classification_signature"
+  key  : "classification_signature"                                                                                                                                                                  
   value: {
     inputs: {
       key  : "inputs"
@@ -652,7 +659,7 @@ signature_def: {
     - 하나의 인풋과 하나의 아웃풋을 제공하는 방법
 
 ```json
-signature_def: {
+signature_def: {                                                                                                                                  
   key  : "regression_signature"
   value: {
     inputs: {
@@ -680,11 +687,57 @@ signature_def: {
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
+**[signature 설정](https://www.tensorflow.org/guide/saved_model#%EB%82%B4%EB%B3%B4%EB%82%BC_%EC%8B%9C%EA%B7%B8%EB%8B%88%EC%B2%98_%EC%A7%80%EC%A0%95%ED%95%98%EA%B8%B0)**
+- tf serving 이 어떤 함수를 사용할지 정함
+    - `tf.keras.Model`은 자동으로 signatures를 정해줌
+- 다수의 signature를 정할 수도 있음
+```python
+signatures = {
+    'serving_default':                                                                                 
+        _get_serve_tf_examples_fn(
+            model,
+            tf_transform_output).get_concrete_function( # tf 함수 불러오기
+                tf.TensorSpec(
+                    shape=[None],
+                    dtype=tf.string,
+                    name='examples')
+            )
+}
+model.save(fn_args.serving_model_dir,
+            save_format='tf', signatures=signatures)
+```
+
+---
+
+```python
+def get_serve_tf_examples_fn(model, tf_transform_output):
+
+    model.tft_layer = tf_transform_output.transform_features_layer() 1
+
+    @tf.function
+    def serve_tf_examples_fn(serialized_tf_examples):
+        feature_spec = tf_transform_output.raw_feature_spec()
+        feature_spec.pop(LABEL_KEY)
+        parsed_features = tf.io.parse_example(
+            serialized_tf_examples, feature_spec) 2
+
+        transformed_features = model.tft_layer(parsed_features) 3
+        outputs = model(transformed_features) 4
+        return {'outputs': outputs}
+
+    return serve_tf_examples_fn
+```
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
 **cli 로 model inspect**
 `$ pip install tensorflow-serving-api`
 ```bash
 $ saved_model_cli show --dir saved_models/ \
         --tag_set serve --signature_def serving_default
+
 The given SavedModel SignatureDef contains the following input(s):
   inputs['examples'] tensor_info:
       dtype: DT_STRING
@@ -702,32 +755,10 @@ Method name is: tensorflow/serving/predict
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-**signature 설정**
-```python
-signatures = {
-    'serving_default':
-        _get_serve_tf_examples_fn(
-            model,
-            tf_transform_output).get_concrete_function(
-                tf.TensorSpec(
-                    shape=[None],
-                    dtype=tf.string,
-                    name='examples')
-            )
-}
-model.save(fn_args.serving_model_dir,
-            save_format='tf', signatures=signatures)
-```
-
---- 
-# 서빙 컴포넌트
-> 클라이언트에게 모델 아웃풋을 제공
-
 **서빙서버 실행**
 `$ pip install tensorflow-serving-api`:x:
 
-:thumbsup:
-`$ docker pull tensorflow/serving:latest-gpu`
+`$ docker pull tensorflow/serving:latest-gpu`:thumbsup:
 ```bash
 $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \ 
              -p 8501:8501 \
@@ -760,7 +791,20 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 - tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
 - 비정형 데이터를 다루는데에는 아직 부족
 - 커스텀 컴포넌트 생성 방법
-    - 파이썬 함수 기반, 컨테이너 기반, 기본 컴포넌트
+    1. 파이썬 함수 기반
+    2. 컨테이너 기반
+    3. 기본 컴포넌트
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+
+- tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
+- 비정형 데이터를 다루는데에는 아직 부족
+- [커스텀 컴포넌트 생성 방법](https://www.tensorflow.org/tfx/guide/understanding_custom_components)
+    1. 파이썬 함수 기반
+    2. 컨테이너 기반
+    3. 기본 컴포넌트 구현
 - ex
     - 데이터 주입(비정형 데이터, custom db)
     - 분석 결과, 배포 노티
@@ -777,6 +821,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
+기본 컴포넌트 구현
 1. from scratch
 2. inherit
 
@@ -787,7 +832,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 **[from scratch](tensorflow.org/tfx/guide/custom_component?hl=en)**
 
 1. component spec
-    - 컴포넌트가 통신하는 방법을 정의
+    - 컴포넌트 실행에 필요한 것들을 정의
         - 인풋, 아웃풋, 파라미터
 2. custom executor
     - 컴포넌트 내부의 프로세스를 정의
@@ -801,7 +846,7 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 
 **component spec**
 ```python
-from tfx.types.component_spec import ChannelParameter
+from tfx.types.component_spec import ChannelParameter                                              
 from tfx.types.component_spec import ExecutionParameter
 from tfx.types import standard_artifacts
 
@@ -832,7 +877,9 @@ from tfx.components.base import base_executor
 
 class Executor(base_executor.BaseExecutor):
     
-    def Do(self, input_dict: Dicr[Text, List[types.Artifact]], output_dict: Dict[Text, List[types.Artifact]], exec_properties: Dict[Text, Any]) -> None:
+    def Do(self,                                                                                                             
+input_dict: Dicr[Text, List[types.Artifact]],
+output_dict: Dict[Text, List[types.Artifact]], exec_properties: Dict[Text, Any]) -> None:
         self._log_startup(input_dict, output_dict, exec_properties)
 
         input_base_url = artifact_utils.get_single_url(input_dict['input'])
@@ -910,7 +957,7 @@ class ImageIngestComponent(base_component.BaseComponent):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**component**
+**component 사용**
 
 ```python
 from tfx.utils.dsl_utils import external_input
@@ -950,7 +997,7 @@ class ImageExampleGenExecutor(BaseExampleGenExecutor):
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
 
-**inherit**
+**inherit 사용**
 
 ```python
 from tfx.components import FileBasedExampleGen
@@ -980,7 +1027,7 @@ example_gen = FileBasedExampleGen(
 
 ---
 # 파이프라인
-> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
+> [kubeflow](https://www.kubeflow.org/docs/about/kubeflow/)
 
 - 쿠버네티스 기반 ML 툴킷
     - [KFServing](https://github.com/kubeflow/kfserving)
@@ -989,21 +1036,22 @@ example_gen = FileBasedExampleGen(
     - [Kubeflow Pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
 - v1.1
 - 구글 내부 프로젝트로 시작
-- 내부는 [argo](https://github.com/argoproj/argo)로 실행
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
+![bg right:45% 80%](assets/kf.png)
+- 내부는 [argo](https://github.com/argoproj/argo)로 동작
+1. 파이썬 스크립트 작성
+2. argo conf 생성
+3. 파이프라인에 전달
 
 ---
 # 파이프라인
 > [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
 ![bg right:45% 80%](assets/kf.png)
 
-- 스크립트로 생성된 argo conf를 k8s에 전달
-
----
-# 파이프라인
-> [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
-![bg right:45% 80%](assets/kf.png)
-
-k8s, argo... 
+k8s, argo... 아직 잘 모르겠다면,
 
 tfx 스크립트만..!
 
