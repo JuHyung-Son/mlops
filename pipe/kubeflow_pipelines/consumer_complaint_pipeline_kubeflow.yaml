@@ -1,0 +1,816 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: consumer-complaint-pipeline-kubeflow-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.0.3, pipelines.kubeflow.org/pipeline_compilation_time: '2020-10-22T01:37:06.535823',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Constructs a Kubeflow
+      pipeline.\n\n      Creates Kubeflow ContainerOps for each TFX component encountered
+      in the\n      logical pipeline definition.", "inputs": [{"default": "/tfx-data/output",
+      "name": "pipeline-root"}], "name": "consumer_complaint_pipeline_kubeflow"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.0.3}
+spec:
+  entrypoint: consumer-complaint-pipeline-kubeflow
+  templates:
+  - name: consumer-complaint-pipeline-kubeflow
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    dag:
+      tasks:
+      - name: csvexamplegen
+        template: csvexamplegen
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: evaluator
+        template: evaluator
+        dependencies: [csvexamplegen, resolvernode-latest-blessed-model-resolver,
+          trainer]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: examplevalidator
+        template: examplevalidator
+        dependencies: [schemagen, statisticsgen]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: pusher
+        template: pusher
+        dependencies: [evaluator, trainer]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: resolvernode-latest-blessed-model-resolver
+        template: resolvernode-latest-blessed-model-resolver
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: schemagen
+        template: schemagen
+        dependencies: [statisticsgen]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: statisticsgen
+        template: statisticsgen
+        dependencies: [csvexamplegen]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: trainer
+        template: trainer
+        dependencies: [schemagen, transform]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+      - name: transform
+        template: transform
+        dependencies: [csvexamplegen, schemagen]
+        arguments:
+          parameters:
+          - {name: pipeline-root, value: '{{inputs.parameters.pipeline-root}}'}
+  - name: csvexamplegen
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"custom_config": null,
+        "input_base": "/tfx-data/data", "input_config": "{\n  \"splits\": [\n    {\n      \"name\":
+        \"single_split\",\n      \"pattern\": \"*\"\n    }\n  ]\n}", "output_config":
+        "{\n  \"split_config\": {\n    \"splits\": [\n      {\n        \"hash_buckets\":
+        99,\n        \"name\": \"train\"\n      },\n      {\n        \"hash_buckets\":
+        1,\n        \"name\": \"eval\"\n      }\n    ]\n  }\n}", "output_data_format":
+        6}, "_id": "CsvExampleGen", "_inputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {}, "_data": {}}, "_outputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {}, "_data": {"examples": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "examples", "producer_component_id": "CsvExampleGen", "type": {"name": "Examples",
+        "properties": {"span": "INT", "split_names": "STRING", "version": "INT"}}}}},
+        "_type": "tfx.components.example_gen.csv_example_gen.component.CsvExampleGen",
+        "driver_class": {"__class__": "Driver", "__module__": "tfx.components.example_gen.driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.example_gen.csv_example_gen.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: evaluator
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"eval_config": "{\n  \"metrics_specs\":
+        [\n    {\n      \"metrics\": [\n        {\n          \"class_name\": \"BinaryAccuracy\"\n        },\n        {\n          \"class_name\":
+        \"ExampleCount\"\n        },\n        {\n          \"class_name\": \"AUC\"\n        }\n      ],\n      \"thresholds\":
+        {\n        \"AUC\": {\n          \"change_threshold\": {\n            \"absolute\":
+        0.01,\n            \"direction\": \"HIGHER_IS_BETTER\"\n          },\n          \"value_threshold\":
+        {\n            \"lower_bound\": 0.65\n          }\n        }\n      }\n    }\n  ],\n  \"model_specs\":
+        [\n    {\n      \"label_key\": \"consumer_disputed\"\n    }\n  ],\n  \"slicing_specs\":
+        [\n    {},\n    {\n      \"feature_keys\": [\n        \"product\"\n      ]\n    }\n  ]\n}",
+        "example_splits": "null", "fairness_indicator_thresholds": null, "feature_slicing_spec":
+        null, "module_file": null}, "_id": "Evaluator", "_inputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"model_exports": "model"}, "_data": {"baseline_model":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [{"__artifact_class_module__": "tfx.types.standard_artifacts",
+        "__artifact_class_name__": "Model", "artifact": {}, "artifact_type": {"name":
+        "Model"}}], "output_key": "model", "producer_component_id": "ResolverNode.latest_blessed_model_resolver",
+        "type": {"name": "Model"}}, "examples": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "examples", "producer_component_id": "CsvExampleGen", "type": {"name": "Examples",
+        "properties": {"span": "INT", "split_names": "STRING", "version": "INT"}}},
+        "model": {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "model", "producer_component_id":
+        "Trainer", "type": {"name": "Model"}}}}, "_outputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"output": "evaluation"}, "_data": {"blessing": {"__class__":
+        "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable",
+        "artifacts": [], "output_key": "blessing", "producer_component_id": "Evaluator",
+        "type": {"name": "ModelBlessing"}}, "evaluation": {"__class__": "Channel",
+        "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts":
+        [], "output_key": "evaluation", "producer_component_id": "Evaluator", "type":
+        {"name": "ModelEvaluation"}}}}, "_type": "tfx.components.evaluator.component.Evaluator",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.evaluator.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: examplevalidator
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"exclude_splits":
+        "[]"}, "_id": "ExampleValidator", "_inputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"stats": "statistics"}, "_data": {"schema": {"__class__":
+        "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable",
+        "artifacts": [], "output_key": "schema", "producer_component_id": "SchemaGen",
+        "type": {"name": "Schema"}}, "statistics": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "statistics", "producer_component_id": "StatisticsGen", "type": {"name": "ExampleStatistics",
+        "properties": {"span": "INT", "split_names": "STRING"}}}}}, "_outputs": {"__class__":
+        "_PropertyDictWrapper", "__module__": "tfx.types.node_common", "__tfx_object_type__":
+        "jsonable", "_compat_aliases": {"output": "anomalies"}, "_data": {"anomalies":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "anomalies", "producer_component_id":
+        "ExampleValidator", "type": {"name": "ExampleAnomalies", "properties": {"span":
+        "INT", "split_names": "STRING"}}}}}, "_type": "tfx.components.example_validator.component.ExampleValidator",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.example_validator.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: pusher
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"custom_config": "null",
+        "push_destination": "{\n  \"filesystem\": {\n    \"base_directory\": \"/tfx-data/output/consumer_complaint_pipeline_kubeflow\"\n  }\n}"},
+        "_id": "Pusher", "_inputs": {"__class__": "_PropertyDictWrapper", "__module__":
+        "tfx.types.node_common", "__tfx_object_type__": "jsonable", "_compat_aliases":
+        {"model_export": "model"}, "_data": {"model": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "model", "producer_component_id": "Trainer", "type": {"name": "Model"}}, "model_blessing":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "blessing", "producer_component_id":
+        "Evaluator", "type": {"name": "ModelBlessing"}}}}, "_outputs": {"__class__":
+        "_PropertyDictWrapper", "__module__": "tfx.types.node_common", "__tfx_object_type__":
+        "jsonable", "_compat_aliases": {"model_push": "pushed_model"}, "_data": {"pushed_model":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "pushed_model", "producer_component_id":
+        "Pusher", "type": {"name": "PushedModel"}}}}, "_type": "tfx.components.pusher.component.Pusher",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.pusher.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: resolvernode-latest-blessed-model-resolver
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"resolver_class":
+        {"__class__": "LatestBlessedModelResolver", "__module__": "tfx.dsl.experimental.latest_blessed_model_resolver",
+        "__tfx_object_type__": "class"}, "source_uri": {}}, "_id": "ResolverNode.latest_blessed_model_resolver",
+        "_inputs": {"__class__": "_PropertyDictWrapper", "__module__": "tfx.types.node_common",
+        "__tfx_object_type__": "jsonable", "_compat_aliases": {}, "_data": {"model":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": null, "producer_component_id":
+        null, "type": {"name": "Model"}}, "model_blessing": {"__class__": "Channel",
+        "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts":
+        [], "output_key": null, "producer_component_id": null, "type": {"name": "ModelBlessing"}}}},
+        "_outputs": {"__class__": "_PropertyDictWrapper", "__module__": "tfx.types.node_common",
+        "__tfx_object_type__": "jsonable", "_compat_aliases": {}, "_data": {"model":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [{"__artifact_class_module__": "tfx.types.standard_artifacts",
+        "__artifact_class_name__": "Model", "artifact": {}, "artifact_type": {"name":
+        "Model"}}], "output_key": "model", "producer_component_id": "ResolverNode.latest_blessed_model_resolver",
+        "type": {"name": "Model"}}, "model_blessing": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [{"__artifact_class_module__":
+        "tfx.types.standard_artifacts", "__artifact_class_name__": "ModelBlessing",
+        "artifact": {}, "artifact_type": {"name": "ModelBlessing"}}], "output_key":
+        "model_blessing", "producer_component_id": "ResolverNode.latest_blessed_model_resolver",
+        "type": {"name": "ModelBlessing"}}}}, "_type": "tfx.components.common_nodes.resolver_node.ResolverNode",
+        "driver_class": {"__class__": "ResolverDriver", "__module__": "tfx.components.common_nodes.resolver_node",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "EmptyExecutor", "__module__":
+        "tfx.components.base.base_executor", "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: schemagen
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"exclude_splits":
+        "[]", "infer_feature_shape": false}, "_id": "SchemaGen", "_inputs": {"__class__":
+        "_PropertyDictWrapper", "__module__": "tfx.types.node_common", "__tfx_object_type__":
+        "jsonable", "_compat_aliases": {"stats": "statistics"}, "_data": {"statistics":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "statistics", "producer_component_id":
+        "StatisticsGen", "type": {"name": "ExampleStatistics", "properties": {"span":
+        "INT", "split_names": "STRING"}}}}}, "_outputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"output": "schema"}, "_data": {"schema": {"__class__":
+        "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable",
+        "artifacts": [], "output_key": "schema", "producer_component_id": "SchemaGen",
+        "type": {"name": "Schema"}}}}, "_type": "tfx.components.schema_gen.component.SchemaGen",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.schema_gen.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: statisticsgen
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"exclude_splits":
+        "[]", "stats_options_json": null}, "_id": "StatisticsGen", "_inputs": {"__class__":
+        "_PropertyDictWrapper", "__module__": "tfx.types.node_common", "__tfx_object_type__":
+        "jsonable", "_compat_aliases": {"input_data": "examples"}, "_data": {"examples":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "examples", "producer_component_id":
+        "CsvExampleGen", "type": {"name": "Examples", "properties": {"span": "INT",
+        "split_names": "STRING", "version": "INT"}}}}}, "_outputs": {"__class__":
+        "_PropertyDictWrapper", "__module__": "tfx.types.node_common", "__tfx_object_type__":
+        "jsonable", "_compat_aliases": {"output": "statistics"}, "_data": {"statistics":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "statistics", "producer_component_id":
+        "StatisticsGen", "type": {"name": "ExampleStatistics", "properties": {"span":
+        "INT", "split_names": "STRING"}}}}}, "_type": "tfx.components.statistics_gen.component.StatisticsGen",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.statistics_gen.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: trainer
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"custom_config": "null",
+        "eval_args": "{\n  \"num_steps\": 100\n}", "module_file": "/tfx-data/components/module.py",
+        "run_fn": null, "train_args": "{\n  \"num_steps\": 100\n}", "trainer_fn":
+        null}, "_id": "Trainer", "_inputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"transform_output": "transform_graph"}, "_data": {"examples":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "transformed_examples", "producer_component_id":
+        "Transform", "type": {"name": "Examples", "properties": {"span": "INT", "split_names":
+        "STRING", "version": "INT"}}}, "schema": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "schema", "producer_component_id": "SchemaGen", "type": {"name": "Schema"}},
+        "transform_graph": {"__class__": "Channel", "__module__": "tfx.types.channel",
+        "__tfx_object_type__": "jsonable", "artifacts": [], "output_key": "transform_graph",
+        "producer_component_id": "Transform", "type": {"name": "TransformGraph"}}}},
+        "_outputs": {"__class__": "_PropertyDictWrapper", "__module__": "tfx.types.node_common",
+        "__tfx_object_type__": "jsonable", "_compat_aliases": {"output": "model"},
+        "_data": {"model": {"__class__": "Channel", "__module__": "tfx.types.channel",
+        "__tfx_object_type__": "jsonable", "artifacts": [], "output_key": "model",
+        "producer_component_id": "Trainer", "type": {"name": "Model"}}, "model_run":
+        {"__class__": "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__":
+        "jsonable", "artifacts": [], "output_key": "model_run", "producer_component_id":
+        "Trainer", "type": {"name": "ModelRun"}}}}, "_type": "tfx.components.trainer.component.Trainer",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "GenericExecutor", "__module__":
+        "tfx.components.trainer.executor", "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  - name: transform
+    container:
+      args:
+      - --pipeline_name
+      - consumer_complaint_pipeline_kubeflow
+      - --pipeline_root
+      - '{{inputs.parameters.pipeline-root}}'
+      - --kubeflow_metadata_config
+      - |-
+        {
+          "grpc_config": {
+            "grpc_service_host": {
+              "environment_variable": "METADATA_GRPC_SERVICE_HOST"
+            },
+            "grpc_service_port": {
+              "environment_variable": "METADATA_GRPC_SERVICE_PORT"
+            }
+          }
+        }
+      - --beam_pipeline_args
+      - '["--direct_num_workers=0"]'
+      - --additional_pipeline_args
+      - '{}'
+      - --component_launcher_class_path
+      - tfx.orchestration.launcher.in_process_component_launcher.InProcessComponentLauncher
+      - --serialized_component
+      - '{"__class__": "NodeWrapper", "__module__": "tfx.orchestration.kubeflow.node_wrapper",
+        "__tfx_object_type__": "jsonable", "_exec_properties": {"custom_config": "null",
+        "module_file": "/tfx-data/components/module.py", "preprocessing_fn": null,
+        "splits_config": null}, "_id": "Transform", "_inputs": {"__class__": "_PropertyDictWrapper",
+        "__module__": "tfx.types.node_common", "__tfx_object_type__": "jsonable",
+        "_compat_aliases": {"input_data": "examples"}, "_data": {"examples": {"__class__":
+        "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable",
+        "artifacts": [], "output_key": "examples", "producer_component_id": "CsvExampleGen",
+        "type": {"name": "Examples", "properties": {"span": "INT", "split_names":
+        "STRING", "version": "INT"}}}, "schema": {"__class__": "Channel", "__module__":
+        "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts": [], "output_key":
+        "schema", "producer_component_id": "SchemaGen", "type": {"name": "Schema"}}}},
+        "_outputs": {"__class__": "_PropertyDictWrapper", "__module__": "tfx.types.node_common",
+        "__tfx_object_type__": "jsonable", "_compat_aliases": {"transform_output":
+        "transform_graph"}, "_data": {"transform_graph": {"__class__": "Channel",
+        "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts":
+        [], "output_key": "transform_graph", "producer_component_id": "Transform",
+        "type": {"name": "TransformGraph"}}, "transformed_examples": {"__class__":
+        "Channel", "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable",
+        "artifacts": [], "output_key": "transformed_examples", "producer_component_id":
+        "Transform", "type": {"name": "Examples", "properties": {"span": "INT", "split_names":
+        "STRING", "version": "INT"}}}, "updated_analyzer_cache": {"__class__": "Channel",
+        "__module__": "tfx.types.channel", "__tfx_object_type__": "jsonable", "artifacts":
+        [], "output_key": "updated_analyzer_cache", "producer_component_id": "Transform",
+        "type": {"name": "TransformCache"}}}}, "_type": "tfx.components.transform.component.Transform",
+        "driver_class": {"__class__": "BaseDriver", "__module__": "tfx.components.base.base_driver",
+        "__tfx_object_type__": "class"}, "executor_spec": {"__class__": "ExecutorClassSpec",
+        "__module__": "tfx.components.base.executor_spec", "__tfx_object_type__":
+        "jsonable", "executor_class": {"__class__": "Executor", "__module__": "tfx.components.transform.executor",
+        "__tfx_object_type__": "class"}}}'
+      - --component_config
+      - 'null'
+      command: [python, /tfx-src/tfx/orchestration/kubeflow/container_entrypoint.py]
+      env:
+      - name: WORKFLOW_ID
+        valueFrom:
+          fieldRef: {fieldPath: 'metadata.labels[''workflows.argoproj.io/workflow'']'}
+      - name: KFP_POD_NAME
+        valueFrom:
+          fieldRef: {fieldPath: metadata.name}
+      - name: KFP_NAMESPACE
+        valueFrom:
+          fieldRef: {fieldPath: metadata.namespace}
+      envFrom:
+      - configMapRef: {name: metadata-grpc-configmap, optional: true}
+      image: gcr.io/oreilly-book/ml-pipelines-tfx-custom:0.22.0
+      volumeMounts:
+      - {mountPath: /tfx-data, name: tfx-pv}
+    inputs:
+      parameters:
+      - {name: pipeline-root}
+    outputs:
+      artifacts:
+      - {name: mlpipeline-ui-metadata, path: /mlpipeline-ui-metadata.json}
+    metadata:
+      labels:
+        add-pod-env: "true"
+        pipelines.kubeflow.org/pipeline-sdk-type: tfx
+    volumes:
+    - name: tfx-pv
+      persistentVolumeClaim: {claimName: tfx-pvc}
+  arguments:
+    parameters:
+    - {name: pipeline-root, value: /tfx-data/output}
+  serviceAccountName: pipeline-runner

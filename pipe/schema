@@ -1,0 +1,455 @@
+feature {
+  name: ""
+  type: INT
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "product"
+  type: BYTES
+  domain: "product"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "sub_product"
+  value_count {
+    min: 1
+    max: 1
+  }
+  type: BYTES
+  domain: "sub_product"
+  presence {
+    min_count: 1
+  }
+}
+feature {
+  name: "issue"
+  type: BYTES
+  domain: "issue"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "sub_issue"
+  value_count {
+    min: 1
+    max: 1
+  }
+  type: BYTES
+  domain: "sub_issue"
+  presence {
+    min_fraction: 0.9
+    min_count: 1
+  }
+}
+feature {
+  name: "consumer_complaint_narrative"
+  type: BYTES
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "company"
+  type: BYTES
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "state"
+  value_count {
+    min: 1
+    max: 1
+  }
+  type: BYTES
+  domain: "state"
+  presence {
+    min_count: 1
+  }
+}
+feature {
+  name: "zip_code"
+  value_count {
+    min: 1
+    max: 1
+  }
+  type: BYTES
+  presence {
+    min_count: 1
+  }
+}
+feature {
+  name: "company_response"
+  type: BYTES
+  domain: "company_response"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "timely_response"
+  type: BYTES
+  domain: "timely_response"
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "consumer_disputed"
+  type: INT
+  bool_domain {
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+string_domain {
+  name: "product"
+  value: "Bank account or service"
+  value: "Consumer Loan"
+  value: "Credit card"
+  value: "Credit reporting"
+  value: "Debt collection"
+  value: "Money transfers"
+  value: "Mortgage"
+  value: "Other financial service"
+  value: "Payday loan"
+  value: "Prepaid card"
+  value: "Student loan"
+}
+string_domain {
+  name: "sub_product"
+  value: "(CD) Certificate of deposit"
+  value: "Auto"
+  value: "Cashing a check without an account"
+  value: "Check cashing"
+  value: "Checking account"
+  value: "Conventional adjustable mortgage (ARM)"
+  value: "Conventional fixed mortgage"
+  value: "Credit card"
+  value: "Credit repair"
+  value: "Debt settlement"
+  value: "Domestic (US) money transfer"
+  value: "Electronic Benefit Transfer / EBT card"
+  value: "FHA mortgage"
+  value: "Federal student loan"
+  value: "Foreign currency exchange"
+  value: "General purpose card"
+  value: "Gift or merchant card"
+  value: "Government benefit payment card"
+  value: "Home equity loan or line of credit"
+  value: "I do not know"
+  value: "ID prepaid card"
+  value: "Installment loan"
+  value: "International money transfer"
+  value: "Medical"
+  value: "Mobile wallet"
+  value: "Money order"
+  value: "Mortgage"
+  value: "Non-federal student loan"
+  value: "Other (i.e. phone, health club, etc.)"
+  value: "Other bank product/service"
+  value: "Other mortgage"
+  value: "Other special purpose card"
+  value: "Pawn loan"
+  value: "Payday loan"
+  value: "Payroll card"
+  value: "Personal line of credit"
+  value: "Refund anticipation check"
+  value: "Reverse mortgage"
+  value: "Savings account"
+  value: "Title loan"
+  value: "Transit card"
+  value: "Traveler\303\242\302\200\302\231s/Cashier\303\242\302\200\302\231s checks"
+  value: "VA mortgage"
+  value: "Vehicle lease"
+  value: "Vehicle loan"
+}
+string_domain {
+  name: "issue"
+  value: "APR or interest rate"
+  value: "Account opening, closing, or management"
+  value: "Account terms and changes"
+  value: "Adding money"
+  value: "Advertising and marketing"
+  value: "Advertising, marketing or disclosures"
+  value: "Application processing delay"
+  value: "Application, originator, mortgage broker"
+  value: "Applied for loan/did not receive money"
+  value: "Arbitration"
+  value: "Balance transfer"
+  value: "Balance transfer fee"
+  value: "Bankruptcy"
+  value: "Billing disputes"
+  value: "Billing statement"
+  value: "Can\'t contact lender"
+  value: "Can\'t repay my loan"
+  value: "Can\'t stop charges to bank account"
+  value: "Cash advance"
+  value: "Cash advance fee"
+  value: "Charged bank acct wrong day or amt"
+  value: "Charged fees or interest I didn\'t expect"
+  value: "Closing/Cancelling account"
+  value: "Communication tactics"
+  value: "Cont\'d attempts collect debt not owed"
+  value: "Convenience checks"
+  value: "Credit card protection / Debt protection"
+  value: "Credit decision / Underwriting"
+  value: "Credit determination"
+  value: "Credit line increase/decrease"
+  value: "Credit monitoring or identity protection"
+  value: "Credit reporting company\'s investigation"
+  value: "Customer service / Customer relations"
+  value: "Customer service/Customer relations"
+  value: "Dealing with my lender or servicer"
+  value: "Delinquent account"
+  value: "Deposits and withdrawals"
+  value: "Disclosure verification of debt"
+  value: "Disclosures"
+  value: "Excessive fees"
+  value: "False statements or representation"
+  value: "Fees"
+  value: "Forbearance / Workout plans"
+  value: "Fraud or scam"
+  value: "Getting a loan"
+  value: "Identity theft / Fraud / Embezzlement"
+  value: "Improper contact or sharing of info"
+  value: "Improper use of my credit report"
+  value: "Incorrect exchange rate"
+  value: "Incorrect information on credit report"
+  value: "Incorrect/missing disclosures or info"
+  value: "Late fee"
+  value: "Lender damaged or destroyed vehicle"
+  value: "Lender repossessed or sold the vehicle"
+  value: "Lender sold the property"
+  value: "Loan modification,collection,foreclosure"
+  value: "Loan servicing, payments, escrow account"
+  value: "Lost or stolen check"
+  value: "Lost or stolen money order"
+  value: "Making/receiving payments, sending money"
+  value: "Managing the line of credit"
+  value: "Managing the loan or lease"
+  value: "Managing, opening, or closing account"
+  value: "Money was not available when promised"
+  value: "Other"
+  value: "Other fee"
+  value: "Other service issues"
+  value: "Other transaction issues"
+  value: "Overdraft, savings or rewards features"
+  value: "Overlimit fee"
+  value: "Payment to acct not credited"
+  value: "Payoff process"
+  value: "Privacy"
+  value: "Problems caused by my funds being low"
+  value: "Problems when you are unable to pay"
+  value: "Received a loan I didn\'t apply for"
+  value: "Rewards"
+  value: "Sale of account"
+  value: "Settlement process and costs"
+  value: "Shopping for a line of credit"
+  value: "Shopping for a loan or lease"
+  value: "Taking out the loan or lease"
+  value: "Taking/threatening an illegal action"
+  value: "Transaction issue"
+  value: "Unable to get credit report/credit score"
+  value: "Unauthorized transactions/trans. issues"
+  value: "Unexpected/Other fees"
+  value: "Unsolicited issuance of credit card"
+  value: "Using a debit or ATM card"
+  value: "Wrong amount charged or received"
+}
+string_domain {
+  name: "sub_issue"
+  value: "Account status"
+  value: "Account terms"
+  value: "Account terms and changes"
+  value: "Applied for loan/did not receive money"
+  value: "Attempted to collect wrong amount"
+  value: "Attempted to/Collected exempt funds"
+  value: "Billing dispute"
+  value: "Called after sent written cease of comm"
+  value: "Called outside of 8am-9pm"
+  value: "Can\'t contact lender"
+  value: "Can\'t decrease my monthly payments"
+  value: "Can\'t get flexible payment options"
+  value: "Can\'t qualify for a loan"
+  value: "Can\'t stop charges to bank account"
+  value: "Can\'t temporarily postpone payments"
+  value: "Charged bank acct wrong day or amt"
+  value: "Charged fees or interest I didn\'t expect"
+  value: "Contacted employer after asked not to"
+  value: "Contacted me after I asked not to"
+  value: "Contacted me instead of my attorney"
+  value: "Debt is not mine"
+  value: "Debt resulted from identity theft"
+  value: "Debt was discharged in bankruptcy"
+  value: "Debt was paid"
+  value: "Don\'t agree with fees charged"
+  value: "Frequent or repeated calls"
+  value: "Having problems with customer service"
+  value: "Impersonated an attorney or official"
+  value: "Inadequate help over the phone"
+  value: "Indicated committed crime not paying"
+  value: "Indicated shouldn\'t respond to lawsuit"
+  value: "Information is not mine"
+  value: "Investigation took too long"
+  value: "Keep getting calls about my loan"
+  value: "Need information about my balance/terms"
+  value: "No notice of investigation status/result"
+  value: "Not disclosed as an attempt to collect"
+  value: "Not given enough info to verify debt"
+  value: "Payment to acct not credited"
+  value: "Personal information"
+  value: "Problem cancelling or closing account"
+  value: "Problem getting my free annual report"
+  value: "Problem getting report or credit score"
+  value: "Problem with fraud alerts"
+  value: "Problem with statement of dispute"
+  value: "Public record"
+  value: "Qualify for a better loan than offered"
+  value: "Received a loan I didn\'t apply for"
+  value: "Received bad information about my loan"
+  value: "Received marketing offer after opted out"
+  value: "Receiving unwanted marketing/advertising"
+  value: "Reinserted previously deleted info"
+  value: "Report improperly shared by CRC"
+  value: "Report shared with employer w/o consent"
+  value: "Right to dispute notice not received"
+  value: "Seized/Attempted to seize property"
+  value: "Sued w/o proper notification of suit"
+  value: "Sued where didn\'t live/sign for debt"
+  value: "Talked to a third party about my debt"
+  value: "Threatened arrest/jail if do not pay"
+  value: "Threatened to sue on too old debt"
+  value: "Threatened to take legal action"
+  value: "Trouble with how payments are handled"
+  value: "Used obscene/profane/abusive language"
+}
+string_domain {
+  name: "state"
+  value: "AA"
+  value: "AE"
+  value: "AL"
+  value: "AP"
+  value: "AR"
+  value: "AS"
+  value: "AZ"
+  value: "CA"
+  value: "CO"
+  value: "CT"
+  value: "DC"
+  value: "DE"
+  value: "FL"
+  value: "FM"
+  value: "GA"
+  value: "GU"
+  value: "HI"
+  value: "IA"
+  value: "ID"
+  value: "IL"
+  value: "IN"
+  value: "KS"
+  value: "KY"
+  value: "LA"
+  value: "MA"
+  value: "MD"
+  value: "ME"
+  value: "MI"
+  value: "MN"
+  value: "MO"
+  value: "MP"
+  value: "MS"
+  value: "MT"
+  value: "NC"
+  value: "ND"
+  value: "NE"
+  value: "NH"
+  value: "NJ"
+  value: "NM"
+  value: "NV"
+  value: "NY"
+  value: "OH"
+  value: "OK"
+  value: "OR"
+  value: "PA"
+  value: "PR"
+  value: "RI"
+  value: "SC"
+  value: "SD"
+  value: "TN"
+  value: "TX"
+  value: "UT"
+  value: "VA"
+  value: "VI"
+  value: "VT"
+  value: "WA"
+  value: "WI"
+  value: "WV"
+  value: "WY"
+}
+string_domain {
+  name: "company_response"
+  value: "Closed"
+  value: "Closed with explanation"
+  value: "Closed with monetary relief"
+  value: "Closed with non-monetary relief"
+  value: "Untimely response"
+}
+string_domain {
+  name: "timely_response"
+  value: "No"
+  value: "Yes"
+}
