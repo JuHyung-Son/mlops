@@ -61,14 +61,6 @@ def convert_zip_code(zip_code):
 
 
 
-from module.transform import (
-    BUCKET_FEATURES,
-    ONE_HOT_FEATURES,
-    TEXT_FEATURES,
-    LABEL_KEY,
-    transformed_name,
-)
-
 def get_model(show_summary=True):
     """
     This function defines a Keras model and returns the model as a
