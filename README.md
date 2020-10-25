@@ -20,6 +20,8 @@ ml, cloud, tensorflow, onnx :thumbsup:
 [github](https://github.com/jusonn)
 [linkedIn](https://www.linkedin.com/in/juhyung-son-897b28130/)
 
+[발표자료1](https://sallys.space/mlops)
+[발표자료2](https://github.com/jusonn/mlops)
 ---
 # mlops로 ml 자동화하기
 
