@@ -86,11 +86,15 @@ ___
 # mlops란
 > MLOps is a practice for collaboration and communication between data scientists and operations professionals to help **manage production ML lifecycle.**
 
-**ml + ops**
+**ml + devops**
 - mlops, ml 파이프라인으로 불리는 중
 - 다양한 오픈소스 (tfx, kubeflow, mlflow...)
 - 최근들어 중요성이 부각됨
     - 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
+---
+# mlops란
+- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
+
 ---
 # mlops란
 - 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
@@ -99,8 +103,17 @@ ___
 
 ---
 # mlops란
-- 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
+- devops + ml 모델 + 데이터
 ![](assets/mlops2.png)
+
+---
+# 이전까지의 ml
+1. 데이터 준비
+
+```bash
+$ ssh ~~~~
+$ mv /data/root/dataset ./
+```
 
 ---
 # 이전까지의 ml
@@ -151,21 +164,42 @@ $ mv saved_model/14 serving_model/
 
 --- 
 # mlops에서는?
-![bg right:65% 80%](assets/model-life-cycle.png)
-- 데이터
-    - 주입
-    - 검증
-    - 전처리
-- 모델
-    - 학습
-    - 검증
-- 서빙
+```bash
+pipeline run
+```
+![](assets/model-life-cycle.png)
 
 ---
 # mlops에서는?
 
 ![bg right:46% 80%](assets/dag.png)
 프로젝트에 따라 필요한 컴포넌트만 사용
+
+---
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
+
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼
+
+---
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
+
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼
+- ML 파이프라인을 구성하는 컴포넌트 제공
+
+---
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
+
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼
+- ML 파이프라인을 구성하는 컴포넌트 제공
+- MetadataStore(DB), tfdv, tft 등 tf 라이브러리 포함
+
+---
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
+
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼
+- ML 파이프라인을 구성하는 컴포넌트 제공
+- MetadataStore(DB), tfdv, tft 등 tf 라이브러리 포함
+- jupyter notebook을 통한 interactive 파이프라인 기능 제공
 
 ---
 # [TFX](https://www.tensorflow.org/tfx?hl=ko)
@@ -231,9 +265,6 @@ ml 컴포넌트를 실행, 모니터링
 # 데이터 주입 컴포넌트
 > 데이터 준비하고 파이프라인에 주입
 
-**인풋**
-csv, parquet, avro, tfrecords, ...
-
 **아웃풋**
 ExampleGen
     - 데이터셋 수집, 분할하는 파이프라인 초기 입력 컴포넌트
@@ -254,13 +285,13 @@ ExampleGen
 # 데이터 검증 컴포넌트
 > 데이터가 현재 모델에 적합한 데이터인지 검증
 - ML 시스템
-    - 데이터 포맷, 타입이 올바른지 + alpha
+    - 데이터 포맷, 타입이 올바른지 + 데이터 퀄리티
 
 --- 
 # 데이터 검증 컴포넌트
 > 데이터가 현재 모델에 적합한 데이터인지 검증
 - ML 시스템
-    - 데이터 포맷, 타입이 올바른지 + alpha
+    - 데이터 포맷, 타입이 올바른지 + 데이터 퀄리티
 
 **garbage in, garbage out**
 ![](assets/garbage.jpg)
@@ -269,11 +300,23 @@ ExampleGen
 # 데이터 검증 컴포넌트
 > 데이터가 현재 모델에 적합한 데이터인지 검증
 - ML 시스템
-    - 데이터 포맷, 타입이 올바른지 + alpha
+    - 데이터 포맷, 타입이 올바른지 + 데이터 퀄리티
 **garbage in, garbage out**
 ![](assets/garbage.jpg)
 - 새로 들어온 데이터가 모델의 성능을 향상 시킬 수 있는 데이터인지 확인
     - 데이터 분포, 이미지 도메인, 자연어처리
+
+---
+# 데이터 검증 컴포넌트
+> 데이터가 현재 모델에 적합한 데이터인지 검증
+
+**[TFDV](https://www.tensorflow.org/tfx/data_validation/get_started)**
+-> 정형 데이터에 특화된 데이터 검증 라이브러리
+
+- missing, empty, anomaly 데이터 탐지
+- 학습, 검증 데이터 비교
+- 과거, 현재 데이터 비교
+- 효과적인, 불필요한 피쳐 찾기
 
 ---
 # 데이터 검증 컴포넌트
@@ -292,7 +335,6 @@ ExampleGen
 
 ---
 # 데이터 검증 컴포넌트
-> 데이터가 현재 모델에 적합한 데이터인지 검증
 
 `Examples` -> `ExampleStatistics` -> `Schema` -> `ExampleValidator`
 ![](assets/validator.png)
@@ -302,6 +344,13 @@ ExampleGen
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
 
 **:star:Training-Serving Skew:star:**
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
 
 ---
 # 데이터 전처리 컴포넌트
@@ -322,12 +371,84 @@ ExampleGen
 
 **해결 방법 1**
 - 전처리 서버 추가
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 1**
+- 전처리 서버 추가
+    - 서빙서버(trt, tf serving)의 성능을 받쳐줄 수 있어야함 :angry::angry:
+        - C++로 수년간 개발되어 온 서빙서버..
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 1**
+- 전처리 서버 추가
     - 서빙서버(trt, tf serving)의 성능을 받쳐줄 수 있어야함 :angry::angry:
         - C++로 수년간 개발되어 온 서빙서버..
     - 비용 증가
         - 전처리 코드가 분리되어 있음
         - 모델마다 다른 전치리 방법 
-    - 운영 비용 증가
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 1**
+- 전처리 서버 추가
+    - 서빙서버(trt, tf serving)의 성능을 받쳐줄 수 있어야함 :angry::angry:
+        - C++로 수년간 개발되어 온 서빙서버..
+    - 비용 증가
+        - 전처리 코드가 분리되어 있음
+        - 모델마다 다른 전치리 방법 
+    - 운영 비용 증가    
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 2**
+- 백엔드 서버에 구현
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 2**
+- 백엔드 서버에 구현
+    - 백엔드 서버에서 전처리 진행 후 서빙 요청
+        - 쉽다.
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 2**
+- 백엔드 서버에 구현
+    - 백엔드 서버에서 전처리 진행 후 서빙 요청
+        - 쉽다.
+    - 백엔드 서버 성능에 영향을 끼침.
 
 ---
 # 데이터 전처리 컴포넌트
@@ -355,16 +476,43 @@ ExampleGen
 - 전처리를 프레임워크 함수로 구현
     - `torch.nn`, `tft` 등..
         - 모델 저장시 전처리 그래프도 함께 저장 가능
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 3**
+- 전처리를 프레임워크 함수로 구현
+    - `torch.nn`, `tft` 등..
+        - 모델 저장시 전처리 그래프도 함께 저장 가능
+    - 관리 비용 감소
+        - 서빙서버만 사용
+        - 전처리 함수 통합
+
+---
+# 데이터 전처리 컴포넌트
+> 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
+
+**Training-Serving Skew**
+- 학습할 때와 서빙할 때 데이터를 전처리하는 방법이 다름.
+
+**해결 방법 3**
+- 전처리를 프레임워크 함수로 구현
+    - `torch.nn`, `tft` 등..
+        - 모델 저장시 전처리 그래프도 함께 저장 가능
     - 관리 비용 감소
         - 서빙서버만 사용
         - 전처리 함수 통합
     - 구현 난이도 증가
     - torch의 경우 전처리를 위한 함수가 많지 않음.
- 
+ ![bg right:30% 100%](assets/skew2.png)
 ---
 # 데이터 전처리 컴포넌트
 > 검증된 데이터를 모델이 사용할 수 있는 형태로 처리
-![bg right:36% 100%](assets/skew2.png)
+ ![bg right:30% 100%](assets/skew2.png)
 
 **[TFT](https://www.tensorflow.org/tfx/transform/get_started)**
 - 많이 쓰이는 전처리 함수가 구현된 데이터 전처리 라이브러리
@@ -381,7 +529,6 @@ transformed_features = model.ftf_layer(input)
 # 인퍼런스
 outputs = model(transformed_features)
 ```
-- tf 함수를 이용해 전처리 코드 짜야함.
 
 ---
 # 데이터 전처리 컴포넌트
@@ -465,8 +612,7 @@ def run_fn(fn_args):
 
 **loss vs metric**
 
-- loss: 학습시 모델이 보는 지표
-    - 모델이 학습할 방향을 제시
+
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 쉬움
 
@@ -477,8 +623,7 @@ def run_fn(fn_args):
 
 **loss vs metric**
 
-- loss: 학습시 모델이 보는 성능 지표
-    - 모델이 학습할 방향을 제시
+
 - metric: 사람이 보는 성능 지표
     - 해석이 쉽고 좀 더 설명이 가능
 
@@ -520,6 +665,23 @@ XAI
 - 연산량 많음
 - GPU 가속 가능
 - 배치 단위 서빙 가능
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**파이썬 웹 서버(flask, fastAPI, django) 기반**
+
+- 가벼운 것에 쉽게 적용 가능, 개발 쉬움 :thumbsup:
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**파이썬 웹 서버(flask, fastAPI, django) 기반**
+
+- 가벼운 것에 쉽게 적용 가능, 개발 쉬움 :thumbsup:
+- 성능 많이 떨어짐 :cry:
 
 --- 
 # 서빙 컴포넌트
@@ -584,9 +746,24 @@ saved_model_path = model.save('saved_models/1', save_format='tf', signatures=sig
 # 서빙 컴포넌트
 > 클라이언트에게 모델 아웃풋을 제공
 
-- saved_model.pb: 모델 그래프 구조가 저장된 binary pb 파일
-- variables: 모델 그래프의 변수들이 저장된 폴더
-- assets: 모델에 필요한 추가적인 파일들 ex) vocab
+```bash
+$ tree saved_models/                                                                             
+saved_models/
+└── 1
+    ├── assets
+    │   └── saved_model.json
+    ├── saved_model.pb
+    └── variables
+        ├── checkpoint
+        ├── variables.data-00000-of-00001
+        └── variables.index
+
+3 directories, 5 files
+```
+
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
 
 ```bash
 $ tree saved_models/                                                                             
@@ -602,6 +779,10 @@ saved_models/
 
 3 directories, 5 files
 ```
+
+- saved_model.pb: 모델 그래프 구조가 저장된 binary pb 파일
+- variables: 모델 그래프의 변수들이 저장된 폴더
+- assets: 모델에 필요한 추가적인 파일들 ex) vocab
 
 --- 
 # 서빙 컴포넌트
@@ -625,7 +806,7 @@ saved_models/
     - 아웃풋을 추가하는 것이 가능 (ex. attention 레이어 아웃풋 추가) 
 ```json
 signature_def: {
-  key  : "prediction_signature"                                                                                                                                                                 
+  key  : "prediction_signature"                                                                                                                        
   value: {
     inputs: {
       key  : "inputs"
@@ -800,6 +981,13 @@ Method name is: tensorflow/serving/predict
 **서빙서버 실행**
 `$ pip install tensorflow-serving-api`:x:
 
+--- 
+# 서빙 컴포넌트
+> 클라이언트에게 모델 아웃풋을 제공
+
+**서빙서버 실행**
+`$ pip install tensorflow-serving-api`:x:
+
 `$ docker pull tensorflow/serving:latest-gpu`:thumbsup:
 ```bash
 $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \ 
@@ -831,10 +1019,6 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 
 - tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
 - 비정형 데이터를 다루는데에는 아직 부족
-- 커스텀 컴포넌트 생성 방법
-    1. 파이썬 함수 기반
-    2. 컨테이너 기반
-    3. 기본 컴포넌트
 
 ---
 # 커스텀 컴포넌트
@@ -842,15 +1026,21 @@ $ CUDA_VISIBLE_DEVICES=0,1,2 docker run -p 8500:8500 \
 
 - tfx가 모든 기능을 제공하지는 않음 (아직 버전 0.23..)
 - 비정형 데이터를 다루는데에는 아직 부족
-- [커스텀 컴포넌트 생성 방법](https://www.tensorflow.org/tfx/guide/understanding_custom_components)
-    1. 파이썬 함수 기반
-    2. 컨테이너 기반
-    3. 기본 컴포넌트 구현
+
 - ex
     - 데이터 주입(비정형 데이터, custom db)
     - 분석 결과, 배포 노티
     - [slack api](https://github.com/tensorflow/tfx/tree/master/tfx/examples/custom_components/slack)
     - 등등
+
+---
+# 커스텀 컴포넌트
+> 필요한 컴포넌트를 직접 만들자
+- [커스텀 컴포넌트 생성 방법](https://www.tensorflow.org/tfx/guide/understanding_custom_components)
+    1. 파이썬 함수 기반
+    2. 컨테이너 기반
+    3. 기본 컴포넌트
+
 ---
 # 커스텀 컴포넌트
 > 필요한 컴포넌트를 직접 만들자
@@ -1077,6 +1267,21 @@ example_gen = FileBasedExampleGen(
     - [Kubeflow Pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
 - v1.1
 - 구글 내부 프로젝트로 시작
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
+![bg right:45% 80%](assets/kf.png)
+- 내부는 [argo](https://github.com/argoproj/argo)로 동작
+1. 파이썬 스크립트 작성
+
+---
+# 파이프라인
+> [kubeflow pipelines](https://www.kubeflow.org/docs/pipelines/overview/pipelines-overview/)
+![bg right:45% 80%](assets/kf.png)
+- 내부는 [argo](https://github.com/argoproj/argo)로 동작
+1. 파이썬 스크립트 작성
+2. argo conf 생성
 
 ---
 # 파이프라인
