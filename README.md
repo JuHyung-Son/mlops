@@ -1101,7 +1101,7 @@ tfx 스크립트만..!
 > [kubeflow pipelines](https://www.kubeflow.org/docs/about/kubeflow/)
 
 ![bg right:45% 80%](assets/kf.png)
-
+- [tfx_components.py](https://gist.github.com/jusonn/8ec9f59231edfdc6f75ee84a35b9689e)
 - [tfx_py_script.py](https://gist.github.com/jusonn/24c3628de8a5c63e179ac109c56e6e05)
 
 ```bash
