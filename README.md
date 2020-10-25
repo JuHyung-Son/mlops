@@ -168,26 +168,27 @@ $ mv saved_model/14 serving_model/
 프로젝트에 따라 필요한 컴포넌트만 사용
 
 ---
-# TFX
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
 
-- 텐서플로우 생태계 구성 중 프로덕션을 위한 [플랫폼](https://www.tensorflow.org/tfx?hl=ko)
+- 텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼
 - ML 파이프라인을 구성하는 컴포넌트 제공
 - MetadataStore(DB), tfdv, tft 등 tf 라이브러리 포함
 - jupyter notebook을 통한 interactive 파이프라인 기능 제공
 - 정식 릴리즈 0.24
 
 ---
-# TFX
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
 - ML 파이프라인을 구성하는 컴포넌트를 제공
 ![](assets/components.png)
 
 ---
-# TFX
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
 - 컴포넌트는 MetadataStore(DB)를 통해 통신
 - MetadataStore를 이용해 모델 혹은 컴포넌트 성능 비교 가능
 ![](assets/inside-tfx.png)
+
 ---
-# TFX
+# [TFX](https://www.tensorflow.org/tfx?hl=ko)
 **비슷한 오픈소스** 
 
 [AeroSolve](https://github.com/airbnb/aerosolve) (airbnb)
@@ -203,7 +204,6 @@ ml 컴포넌트를 실행, 모니터링
 - [airflow](https://airflow.apache.org/)
 - [apach beam](https://beam.apache.org/)
 - [kubeflow](https://www.kubeflow.org/)
-- [mlflow](https://mlflow.org/)
 
 ---
 
@@ -279,7 +279,7 @@ ExampleGen
 # 데이터 검증 컴포넌트
 > 데이터가 현재 모델에 적합한 데이터인지 검증
 
-**TFDV**
+**[TFDV](https://www.tensorflow.org/tfx/data_validation/get_started)**
 -> 정형 데이터에 특화된 데이터 검증 라이브러리
 
 - missing, empty, anomaly 데이터 탐지
@@ -367,8 +367,9 @@ ExampleGen
 ![bg right:36% 100%](assets/skew2.png)
 
 **[TFT](https://www.tensorflow.org/tfx/transform/get_started)**
-- 동일한 코드로 학습, 서빙에 사용
+- 많이 쓰이는 전처리 함수가 구현된 데이터 전처리 라이브러리
 - tf.image, tf.text, tf.audio, tfa 등등 사용가능
+- 동일한 코드로 학습, 서빙에 사용
 - 전처리 그래프 생성 후 모델 그래프 앞단에 전처리 그래프를 붙이는 방식
 
 ```python

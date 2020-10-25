@@ -221,9 +221,9 @@ model 14: accuracy 90%
 프로젝트에 따라 필요한 컴포넌트만 사용</p>
 </section>
 </foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section style="" data-marpit-advanced-background="pseudo" data-marpit-pagination="14" data-marpit-pagination-total="81"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="15" data-paginate="true" data-marpit-pagination="15" data-marpit-pagination-total="81" style="--paginate:true;">
-<h1>TFX</h1>
+<h1><a href="https://www.tensorflow.org/tfx?hl=ko">TFX</a></h1>
 <ul>
-<li>텐서플로우 생태계 구성 중 프로덕션을 위한 <a href="https://www.tensorflow.org/tfx?hl=ko">플랫폼</a></li>
+<li>텐서플로우 생태계 구성 중 프로덕션을 위한 플랫폼</li>
 <li>ML 파이프라인을 구성하는 컴포넌트 제공</li>
 <li>MetadataStore(DB), tfdv, tft 등 tf 라이브러리 포함</li>
 <li>jupyter notebook을 통한 interactive 파이프라인 기능 제공</li>
@@ -231,14 +231,14 @@ model 14: accuracy 90%
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-paginate="true" data-marpit-pagination="16" data-marpit-pagination-total="81" style="--paginate:true;">
-<h1>TFX</h1>
+<h1><a href="https://www.tensorflow.org/tfx?hl=ko">TFX</a></h1>
 <ul>
 <li>ML 파이프라인을 구성하는 컴포넌트를 제공<br />
 <img src="assets/components.png" alt="" /></li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="17" data-paginate="true" data-marpit-pagination="17" data-marpit-pagination-total="81" style="--paginate:true;">
-<h1>TFX</h1>
+<h1><a href="https://www.tensorflow.org/tfx?hl=ko">TFX</a></h1>
 <ul>
 <li>컴포넌트는 MetadataStore(DB)를 통해 통신</li>
 <li>MetadataStore를 이용해 모델 혹은 컴포넌트 성능 비교 가능<br />
@@ -246,7 +246,7 @@ model 14: accuracy 90%
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-paginate="true" data-marpit-pagination="18" data-marpit-pagination-total="81" style="--paginate:true;">
-<h1>TFX</h1>
+<h1><a href="https://www.tensorflow.org/tfx?hl=ko">TFX</a></h1>
 <p><strong>비슷한 오픈소스</strong></p>
 <p><a href="https://github.com/airbnb/aerosolve">AeroSolve</a> (airbnb)<br />
 <a href="https://stripe.com/blog/railyard-training-models">Railyard</a> (Stripe)<br />
@@ -261,7 +261,6 @@ model 14: accuracy 90%
 <li><a href="https://airflow.apache.org/">airflow</a></li>
 <li><a href="https://beam.apache.org/">apach beam</a></li>
 <li><a href="https://www.kubeflow.org/">kubeflow</a></li>
-<li><a href="https://mlflow.org/">mlflow</a></li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="20" data-paginate="true" data-marpit-pagination="20" data-marpit-pagination-total="81" style="--paginate:true;">
@@ -384,7 +383,7 @@ ExampleGen<br />
 <blockquote>
 <p>데이터가 현재 모델에 적합한 데이터인지 검증</p>
 </blockquote>
-<p><strong>TFDV</strong><br />
+<p><strong><a href="https://www.tensorflow.org/tfx/data_validation/get_started">TFDV</a></strong><br />
 -&gt; 정형 데이터에 특화된 데이터 검증 라이브러리</p>
 <ul>
 <li>missing, empty, anomaly 데이터 탐지</li>
@@ -521,8 +520,9 @@ ExampleGen<br />
 </blockquote>
 <p><strong><a href="https://www.tensorflow.org/tfx/transform/get_started">TFT</a></strong></p>
 <ul>
-<li>동일한 코드로 학습, 서빙에 사용</li>
+<li>많이 쓰이는 전처리 함수가 구현된 데이터 전처리 라이브러리</li>
 <li>tf.image, tf.text, tf.audio, tfa 등등 사용가능</li>
+<li>동일한 코드로 학습, 서빙에 사용</li>
 <li>전처리 그래프 생성 후 모델 그래프 앞단에 전처리 그래프를 붙이는 방식</li>
 </ul>
 <pre><code class="language-python"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>model.ftf_layer = tf_transform_output.transform_features_layer()
@@ -1382,6 +1382,7 @@ example_gen = FileBasedExampleGen(
 </blockquote>
 
 <ul>
+<li><a href="https://gist.github.com/jusonn/8ec9f59231edfdc6f75ee84a35b9689e">tfx_components.py</a></li>
 <li><a href="https://gist.github.com/jusonn/24c3628de8a5c63e179ac109c56e6e05">tfx_py_script.py</a></li>
 </ul>
 <pre><code class="language-bash"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>INFO:absl:Pipeline root <span class="hljs-built_in">set</span> to: /tfx-data/output
