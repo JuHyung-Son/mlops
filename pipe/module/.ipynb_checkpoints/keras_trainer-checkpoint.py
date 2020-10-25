@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import tensorflow_transform as tft
 
-from transform import (
+from module.transform import (
     BUCKET_FEATURES,
     ONE_HOT_FEATURES,
     TEXT_FEATURES,
