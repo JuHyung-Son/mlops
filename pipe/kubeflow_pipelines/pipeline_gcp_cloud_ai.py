@@ -12,8 +12,8 @@ output_filename = f"{pipeline_name}.yaml"
 output_dir = os.path.join("argo_pipeline_files")
 
 # Directory and data locations (uses Google Cloud Storage).
-input_bucket = "gs://consumer_complaint_gcp_cloud_ai"
-output_bucket = "gs://consumer_complaint_gcp_cloud_ai"
+input_bucket = "gs://juhyung_tfx_demo"
+output_bucket = "gs://juhyung_tfx_demo"
 data_dir = os.path.join(input_bucket, "data")
 
 tfx_root = os.path.join(output_bucket, "tfx_pipeline")
