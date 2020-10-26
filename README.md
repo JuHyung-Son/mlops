@@ -20,7 +20,7 @@ ml, cloud, tensorflow, onnx :thumbsup:
 [github](https://github.com/jusonn)
 [linkedIn](https://www.linkedin.com/in/juhyung-son-897b28130/)
 
-[ppt](https://sallys.space/mlops)
+[https://sallys.space/mlops](https://sallys.space/mlops)
 [jupyter](https://github.com/jusonn/mlops/blob/main/pipe/tfx.ipynb)
 
 ---
@@ -93,7 +93,6 @@ ___
 - mlops, ml 파이프라인으로 불리는 중
 - 다양한 오픈소스 (tfx, kubeflow, mlflow...)
 - 최근들어 중요성이 부각됨
-    - 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
 ---
 # mlops란
 - 연구, 비즈니스 모델 검증 위주 ➡️ 서비스 적용, 고도화
